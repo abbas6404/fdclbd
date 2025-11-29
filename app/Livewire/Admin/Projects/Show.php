@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Livewire\Admin\Projects;
+
+use Livewire\Component;
+use App\Models\Project;
+
+class Show extends Component
+{
+    public $projectId;
+    public $project;
+
+    public function mount($project)
+    {
+        $this->projectId = $project;
+        $this->loadProject();
+    }
+
+    public function loadProject()
+    {
+        $this->project = Project::with(['flats' => function($query) {
+            $query->orderByRaw("CASE 
+                WHEN status = 'available' THEN 1 
+                WHEN status = 'sold' THEN 2 
+                WHEN status = 'reserved' THEN 3 
+                ELSE 4 
+            END");
+        }, 'createdBy', 'updatedBy'])
+            ->findOrFail($this->projectId);
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.projects.show', [
+            'project' => $this->project,
+        ]);
+    }
+}
