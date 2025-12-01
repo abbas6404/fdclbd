@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('remarks')->nullable();
             $table->bigInteger('total_amount')->default(0); // Total for validation (stored in paise, max: 9,223,372,036,854,775,807)
             $table->json('change_history')->nullable(); // History of changes: [{"field": "voucher_date", "old_value": "2025-01-01", "new_value": "2025-01-02", "changed_by": 1, "changed_at": "2025-01-01 12:00:00"}, ...]
-            
+         
             $table->timestamps();
             $table->softDeletes();
 

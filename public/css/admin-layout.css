@@ -200,7 +200,7 @@ body {
 
 .sidebar .nav-link.active {
     color: #fff;
-    background: linear-gradient(90deg, #e52d27, #b31217);
+    background: linear-gradient(90deg, #014b09, #089d8c);
     font-weight: 600;
     padding: 0.4rem 0rem 0.4rem 1.2rem;
     border-radius: 8px;

@@ -5,6 +5,6 @@
 @section('content')
 <div class="container-fluid">
     <!-- Livewire Component -->
-    @livewire('admin.projects-index')
+    @livewire('admin.projects.index')
 </div>
 @endsection

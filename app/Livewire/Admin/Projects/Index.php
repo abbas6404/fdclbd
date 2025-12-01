@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Admin\Projects;
 
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 
-class ProjectsIndex extends Component
+class Index extends Component
 {
     use WithPagination;
 
     public $search = '';
     public $statusFilter = '';
+    public $facingFilter = '';
     public $sortField = 'id';
     public $sortDirection = 'desc';
     public $perPage = 25;
@@ -24,10 +25,12 @@ class ProjectsIndex extends Component
     public $selectedProject = null;
     public $showFlatsModal = false;
     public $flatStatusFilter = null; // 'available', 'sold', 'reserved', or null for all
+    public $showArchived = false; // Toggle to show archived projects
 
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
+        'facingFilter' => ['except' => ''],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
     ];
@@ -38,6 +41,11 @@ class ProjectsIndex extends Component
     }
 
     public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFacingFilter()
     {
         $this->resetPage();
     }
@@ -70,6 +78,42 @@ class ProjectsIndex extends Component
         }
     }
 
+    public function restoreProject($projectId)
+    {
+        try {
+            $project = Project::withTrashed()->findOrFail($projectId);
+            $project->restore();
+            
+            $this->dispatch('show-alert', [
+                'type' => 'success',
+                'message' => 'Project restored successfully!'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error restoring project: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function permanentDeleteProject($projectId)
+    {
+        try {
+            $project = Project::withTrashed()->findOrFail($projectId);
+            $project->forceDelete();
+            
+            $this->dispatch('show-alert', [
+                'type' => 'success',
+                'message' => 'Project permanently deleted!'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error permanently deleting project: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function showProjectFlats($projectId, $status = null)
     {
         $this->flatStatusFilter = $status;
@@ -81,7 +125,8 @@ class ProjectsIndex extends Component
                 WHEN status = 'available' THEN 1 
                 WHEN status = 'sold' THEN 2 
                 WHEN status = 'reserved' THEN 3 
-                ELSE 4 
+                WHEN status = 'land_owner' THEN 4 
+                ELSE 5 
             END");
         }])->findOrFail($projectId);
         $this->showFlatsModal = true;
@@ -99,7 +144,8 @@ class ProjectsIndex extends Component
                     WHEN status = 'available' THEN 1 
                     WHEN status = 'sold' THEN 2 
                     WHEN status = 'reserved' THEN 3 
-                    ELSE 4 
+                    WHEN status = 'land_owner' THEN 4 
+                    ELSE 5 
                 END");
             }])->findOrFail($this->selectedProject->id);
         }
@@ -112,22 +158,48 @@ class ProjectsIndex extends Component
         $this->flatStatusFilter = null;
     }
 
+    public function toggleArchive()
+    {
+        $this->showArchived = !$this->showArchived;
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = Project::query();
 
+        // Filter by archived status
+        if ($this->showArchived) {
+            $query->onlyTrashed(); // Show only archived (soft deleted) projects
+        }
+        // When showArchived is false, default behavior excludes soft deleted records
+
         // Apply search filter
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('project_name', 'like', '%' . $this->search . '%')
-                  ->orWhere('address', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
+                $searchTerm = '%' . $this->search . '%';
+                $q->where('project_name', 'like', $searchTerm)
+                  ->orWhere('description', 'like', $searchTerm)
+                  ->orWhere('address', 'like', $searchTerm)
+                  ->orWhere('land_owner_name', 'like', $searchTerm)
+                  ->orWhere('land_owner_nid', 'like', $searchTerm)
+                  ->orWhere('land_owner_phone', 'like', $searchTerm);
+                
+                // Search by land_area if search term is numeric
+                if (is_numeric($this->search)) {
+                    $q->orWhere('land_area', 'like', $searchTerm);
+                }
             });
         }
 
         // Apply status filter
         if ($this->statusFilter) {
             $query->where('status', $this->statusFilter);
+        }
+
+        // Apply facing filter
+        if ($this->facingFilter) {
+            $query->where('facing', $this->facingFilter);
         }
 
         // Apply date filters
@@ -138,16 +210,26 @@ class ProjectsIndex extends Component
             $query->whereDate('project_launching_date', '<=', $this->dateTo);
         }
 
-        // Apply sorting
-        $query->orderBy($this->sortField, $this->sortDirection);
-
-        $projects = $query->withCount(['flats', 'flats as available_flats_count' => function($q) {
+        // Get projects with counts first
+        $query = $query->withCount(['flats', 'flats as available_flats_count' => function($q) {
             $q->where('status', 'available');
         }, 'flats as sold_flats_count' => function($q) {
             $q->where('status', 'sold');
         }, 'flats as reserved_flats_count' => function($q) {
             $q->where('status', 'reserved');
-        }])->paginate($this->perPage);
+        }, 'flats as land_owner_flats_count' => function($q) {
+            $q->where('status', 'land_owner');
+        }]);
+
+        // Apply sorting
+        // For count columns, we can sort directly by the count alias
+        if (in_array($this->sortField, ['available_flats_count', 'sold_flats_count', 'reserved_flats_count', 'land_owner_flats_count'])) {
+            $query->orderBy($this->sortField, $this->sortDirection);
+        } else {
+            $query->orderBy($this->sortField, $this->sortDirection);
+        }
+
+        $projects = $query->paginate($this->perPage);
 
         // Get statistics with percentages
         $total = Project::count();
@@ -171,3 +253,4 @@ class ProjectsIndex extends Component
         ]);
     }
 }
+

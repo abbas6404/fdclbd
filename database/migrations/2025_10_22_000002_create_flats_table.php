@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('flat_size', 10, 2)->nullable(); // in square feet (as number)
           
             
-            $table->enum('status', ['available', 'sold', 'reserved'])->default('available');
+            $table->enum('status', ['available', 'sold', 'reserved', 'land_owner'])->default('available');
 
 
             $table->timestamps();

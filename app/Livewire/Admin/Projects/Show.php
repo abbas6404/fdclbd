@@ -23,9 +23,12 @@ class Show extends Component
                 WHEN status = 'available' THEN 1 
                 WHEN status = 'sold' THEN 2 
                 WHEN status = 'reserved' THEN 3 
-                ELSE 4 
+                WHEN status = 'land_owner' THEN 4 
+                ELSE 5 
             END");
-        }, 'createdBy', 'updatedBy'])
+        }, 'createdBy', 'updatedBy', 'attachments' => function($query) {
+            $query->orderBy('display_order');
+        }])
             ->findOrFail($this->projectId);
     }
 

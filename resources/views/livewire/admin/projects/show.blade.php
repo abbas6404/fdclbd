@@ -160,12 +160,12 @@
                             </div>
                             @endif
 
-                            @if($project->building_height)
+                            @if($project->storey)
                             <div class="col-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
-                                    <i class="fas fa-arrows-alt-v me-1"></i>Building Height
+                                    <i class="fas fa-layer-group me-1"></i>Storey
                                 </label>
-                                <div class="form-control-plaintext fw-semibold">{{ number_format($project->building_height, 2) }} ft</div>
+                                <div class="form-control-plaintext fw-semibold">{{ $project->storey }}</div>
                             </div>
                             @endif
 
@@ -202,6 +202,83 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Land Owner Information -->
+                @if($project->land_owner_name || $project->land_owner_nid || $project->land_owner_phone)
+                <div class="row mt-4 pt-3 border-top">
+                    <div class="col-12">
+                        <h6 class="text-primary mb-3 border-bottom pb-2">
+                            <i class="fas fa-user-tie me-2"></i>Land Owner Information
+                        </h6>
+                    </div>
+                    @if($project->land_owner_name)
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold small text-muted mb-1">Land Owner Name</label>
+                        <div class="form-control-plaintext fw-semibold">{{ $project->land_owner_name }}</div>
+                    </div>
+                    @endif
+                    @if($project->land_owner_nid)
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold small text-muted mb-1">Land Owner NID</label>
+                        <div class="form-control-plaintext fw-semibold">{{ $project->land_owner_nid }}</div>
+                    </div>
+                    @endif
+                    @if($project->land_owner_phone)
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold small text-muted mb-1">Land Owner Phone</label>
+                        <div class="form-control-plaintext fw-semibold">{{ $project->land_owner_phone }}</div>
+                    </div>
+                    @endif
+                </div>
+                @endif
+
+                <!-- Document Soft Copy -->
+                @if($project->attachments && $project->attachments->count() > 0)
+                <div class="row mt-4 pt-3 border-top">
+                    <div class="col-12">
+                        <h6 class="text-primary mb-3 border-bottom pb-2">
+                            <i class="fas fa-paperclip me-2"></i>Document Soft Copy
+                        </h6>
+                        <div class="row g-3">
+                            @foreach($project->attachments as $attachment)
+                            <div class="col-md-4">
+                                <div class="card border">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0">
+                                                @if(in_array(strtolower(pathinfo($attachment->file_path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                    <i class="fas fa-image fa-2x text-primary"></i>
+                                                @else
+                                                    <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                                                @endif
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-1 small fw-bold">{{ $attachment->document_name }}</h6>
+                                                <p class="mb-1 small text-muted">
+                                                    <i class="fas fa-file me-1"></i>
+                                                    {{ basename($attachment->file_path) }}
+                                                </p>
+                                                <p class="mb-0 small text-muted">
+                                                    <i class="fas fa-hdd me-1"></i>
+                                                    {{ number_format($attachment->file_size / 1024, 2) }} KB
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <a href="{{ asset('storage/' . $attachment->file_path) }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-outline-primary w-100">
+                                                <i class="fas fa-download me-1"></i> View/Download
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <!-- Additional Information -->
                 <div class="row mt-4 pt-3 border-top">
@@ -268,7 +345,6 @@
                                     <th>Status</th>
                                     <th>Price/Sqft</th>
                                     <th>Total Price</th>
-                                    <th>Net Price</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -290,15 +366,14 @@
                                             <span class="badge bg-danger">Sold</span>
                                         @elseif($flat->status == 'reserved')
                                             <span class="badge bg-warning">Reserved</span>
+                                        @elseif($flat->status == 'land_owner')
+                                            <span class="badge bg-secondary">Land Owner</span>
                                         @else
                                             <span class="badge bg-secondary">{{ ucfirst($flat->status ?? 'N/A') }}</span>
                                         @endif
                                     </td>
-                                    <td>৳{{ number_format($flat->price_per_sqft, 2) }}</td>
-                                    <td>৳{{ number_format($flat->total_price, 2) }}</td>
-                                    <td>
-                                        <strong>৳{{ number_format($flat->net_price ?? $flat->total_price, 2) }}</strong>
-                                    </td>
+                                    <td>৳{{ number_format($flat->price_per_sqft ?? 0, 2) }}</td>
+                                    <td>৳{{ number_format($flat->total_price ?? 0, 2) }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('admin.project-flat.show', $flat->id) }}" 
