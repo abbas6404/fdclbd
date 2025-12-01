@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('entry_type', ['debit', 'credit'])->index(); // Debit = FROM account, Credit = TO account
             $table->bigInteger('amount'); // Stored in paise, max: 9,223,372,036,854,775,807
             $table->text('description')->nullable();
+            $table->json('change_history')->nullable(); // History of changes: [{"field": "amount", "old_value": 1000, "new_value": 2000, "changed_by": 1, "changed_at": "2025-01-01 12:00:00"}, ...]
             
             $table->timestamps();
             $table->softDeletes();

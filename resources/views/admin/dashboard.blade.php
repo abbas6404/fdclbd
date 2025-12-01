@@ -9,7 +9,7 @@
     <div class="row">
         <!-- Department Chart -->
         <div class="col-xl-12 col-lg-12">
-            <div class="card shadow mb-4" style="height: 80vh; background-image: url('{{ asset('images/principles-of-construction-design-1024x699.jpg') }}'); background-size: cover; background-position: center; position: relative;">
+            <div class="card shadow mb-4" style="height: 80vh; background-image: url('{{ asset('images/bg-login.jpg') }}'); background-size: cover; background-position: center; position: relative;">
                 <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(30, 60, 114, 0.3) 0%, rgba(42, 82, 152, 0.4) 50%, rgba(30, 60, 114, 0.3) 100%);"></div>
                 <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 10;">
                     <h1 class="text-white" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 3.5rem; font-weight: 700; letter-spacing: 2px; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); text-align: center;">

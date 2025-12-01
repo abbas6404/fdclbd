@@ -25,7 +25,7 @@ class Requisition extends Model
     protected $casts = [
         'requisition_date' => 'date',
         'required_date' => 'date',
-        'total_amount' => 'decimal:2',
+        'total_amount' => 'integer',
     ];
 
     // Relationships
@@ -66,10 +66,11 @@ class Requisition extends Model
 
     /**
      * Calculate total amount from items
+     * Note: Amount is no longer stored per item, so this returns 0
      */
     public function calculateTotalAmount()
     {
-        $this->total_amount = $this->items()->sum('amount');
+        $this->total_amount = 0;
         $this->save();
         return $this->total_amount;
     }

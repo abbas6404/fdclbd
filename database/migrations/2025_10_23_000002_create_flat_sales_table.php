@@ -20,17 +20,19 @@ return new class extends Migration
             $table->unsignedBigInteger('flat_id');
             $table->unsignedBigInteger('sales_agent_id')->nullable();
 
-            $table->decimal('price_per_sqft', 10, 2);
-            $table->decimal('total_price', 15, 2);
-            $table->decimal('parking_charge', 10, 2)->default(0);
-            $table->decimal('utility_charge', 10, 2)->default(0);
-            $table->decimal('additional_work_charge', 10, 2)->default(0);
-            $table->decimal('other_charge', 10, 2)->nullable();
-            $table->decimal('deduction_amount', 10, 2)->nullable();
-            $table->decimal('refund_amount', 10, 2)->nullable();
-            $table->decimal('net_price', 15, 2)->nullable();
 
             $table->date('sale_date');
+            
+            // Flat Owner Information
+            $table->string('flat_owner_name')->nullable(); // Flat owner name
+            $table->string('flat_owner_nid')->nullable(); // Flat owner NID
+            $table->string('flat_owner_phone')->nullable(); // Flat owner phone
+            
+            // Nominee Information
+            $table->string('nominee_name')->nullable(); // Nominee name
+            $table->string('nominee_nid')->nullable(); // Nominee NID
+            $table->string('nominee_phone')->nullable(); // Nominee phone
+            $table->string('nominee_relationship')->nullable(); // Relationship with owner (e.g., Spouse, Son, Daughter, etc.)
  
             $table->timestamps();
             $table->softDeletes();

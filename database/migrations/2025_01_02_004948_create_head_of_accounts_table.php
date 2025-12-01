@@ -24,6 +24,9 @@ return new class extends Migration
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->boolean('show_in_requisition')->default(false); // Show in requisition dropdown
+            $table->string('last_used_unit')->nullable(); // Remember last used unit for this account
+            $table->unsignedBigInteger('last_rate')->nullable(); // Remember last used rate for this account (not used in requisitions)
             $table->timestamps();
             $table->softDeletes();
         });

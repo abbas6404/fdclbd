@@ -21,7 +21,7 @@ class RequisitionSeeder extends Seeder
         $employees = Employee::all();
         $projects = Project::all();
         $expenseAccounts = HeadOfAccount::where('account_type', 'expense')
-            ->where('account_level', '4')
+            ->where('show_in_requisition', true)
             ->get();
 
         if ($employees->isEmpty() || $expenseAccounts->isEmpty()) {
@@ -56,28 +56,23 @@ class RequisitionSeeder extends Seeder
 
             // Create 2-5 items for each requisition
             $itemCount = rand(2, 5);
-            $totalAmount = 0;
+            $units = ['pcs', 'kg', 'ltr', 'm', 'sqft'];
 
             for ($j = 1; $j <= $itemCount; $j++) {
                 $account = $expenseAccounts->random();
                 $qty = rand(1, 100);
-                $rate = rand(100, 10000);
-                $amount = $qty * $rate;
+                $unit = $units[array_rand($units)];
 
                 RequisitionItem::create([
                     'requisition_id' => $requisition->id,
-                    'chart_of_account_id' => $account->id,
+                    'head_of_account_id' => $account->id,
                     'description' => $this->getItemDescription($account->account_name),
                     'qty' => $qty,
-                    'rate' => $rate,
-                    'amount' => $amount,
+                    'unit' => $unit,
+                    'created_by' => 1,
+                    'updated_by' => 1,
                 ]);
-
-                $totalAmount += $amount;
             }
-
-            // Update requisition total amount
-            $requisition->update(['total_amount' => $totalAmount]);
         }
 
         $this->command->info('Requisitions seeded successfully!');

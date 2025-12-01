@@ -24,8 +24,14 @@ class FlatSale extends Model
         'other_charge',
         'deduction_amount',
         'refund_amount',
-        'net_price',
         'sale_date',
+        'flat_owner_name',
+        'flat_owner_nid',
+        'flat_owner_phone',
+        'nominee_name',
+        'nominee_nid',
+        'nominee_phone',
+        'nominee_relationship',
         'created_by',
         'updated_by',
     ];
@@ -39,7 +45,6 @@ class FlatSale extends Model
         'other_charge' => 'decimal:2',
         'deduction_amount' => 'decimal:2',
         'refund_amount' => 'decimal:2',
-        'net_price' => 'decimal:2',
         'sale_date' => 'date',
     ];
 

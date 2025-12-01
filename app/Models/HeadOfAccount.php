@@ -20,6 +20,9 @@ class HeadOfAccount extends Model
         'parent_id',
         'account_level',
         'status',
+        'show_in_requisition',
+        'last_used_unit',
+        'last_rate',
         'created_by',
         'updated_by',
     ];
@@ -27,6 +30,7 @@ class HeadOfAccount extends Model
     protected $casts = [
         'account_type' => 'string',
         'status' => 'string',
+        'show_in_requisition' => 'boolean',
     ];
 
     /**
@@ -147,6 +151,14 @@ class HeadOfAccount extends Model
     public function scopeContra($query)
     {
         return $query->where('account_type', 'contra');
+    }
+
+    /**
+     * Scope a query to only include accounts that show in requisition.
+     */
+    public function scopeShowInRequisition($query)
+    {
+        return $query->where('show_in_requisition', true);
     }
 
     /**

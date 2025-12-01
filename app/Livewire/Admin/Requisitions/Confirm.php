@@ -47,7 +47,7 @@ class Confirm extends Component
 
     public function viewRequisition($requisitionId)
     {
-        $this->selectedRequisition = Requisition::with(['employee', 'project', 'items.chartOfAccount', 'createdBy'])
+        $this->selectedRequisition = Requisition::with(['employee', 'project', 'items.headOfAccount', 'createdBy'])
             ->findOrFail($requisitionId);
         
         $this->dispatch('openRequisitionModal');
@@ -126,7 +126,7 @@ class Confirm extends Component
 
     public function render()
     {
-        $query = Requisition::with(['employee', 'project', 'items.chartOfAccount', 'createdBy'])
+        $query = Requisition::with(['employee', 'project', 'items.headOfAccount', 'createdBy'])
             ->when($this->statusFilter !== 'all', function ($q) {
                 $q->where('status', $this->statusFilter);
             })

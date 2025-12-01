@@ -267,21 +267,19 @@
                                         <tr>
                                             <th style="width: 5%;" class="text-center">S.No</th>
                                             <th style="width: 20%;">Account Head</th>
-                                            <th style="width: 35%;">Description</th>
+                                            <th style="width: 40%;">Description</th>
                                             <th style="width: 10%;" class="text-end">Qty</th>
-                                            <th style="width: 15%;" class="text-end">Rate</th>
-                                            <th style="width: 15%;" class="text-end">Amount</th>
+                                            <th style="width: 10%;">Unit</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($selectedRequisition->items as $index => $item)
                                         <tr>
                                             <td class="text-center text-dark">{{ $loop->iteration }}</td>
-                                            <td class="text-dark">{{ $item->chartOfAccount->account_name ?? 'N/A' }}</td>
+                                            <td class="text-dark">{{ $item->headOfAccount->account_name ?? 'N/A' }}</td>
                                             <td class="text-dark" style="word-wrap: break-word; word-break: break-word;">{{ $item->description ?? '-' }}</td>
-                                            <td class="text-end text-dark">{{ number_format($item->qty, 2) }}</td>
-                                            <td class="text-end text-dark">{{ number_format($item->rate, 0) }}</td>
-                                            <td class="text-end text-dark"><strong>{{ number_format($item->amount, 0) }}</strong></td>
+                                            <td class="text-end text-dark">{{ number_format($item->qty, 0) }}</td>
+                                            <td class="text-dark">{{ $item->unit ?? '-' }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>

@@ -143,6 +143,7 @@ class HeadOfAccountsController extends Controller
                 'parent_id' => $request->parent_id,
                 'account_level' => $accountLevel,
                 'status' => $request->status,
+                'show_in_requisition' => $request->has('show_in_requisition') ? true : false,
                 'created_by' => Auth::id(),
             ]);
 
@@ -229,6 +230,7 @@ class HeadOfAccountsController extends Controller
                 'parent_id' => $request->parent_id,
                 'account_level' => $accountLevel,
                 'status' => $request->status,
+                'show_in_requisition' => $request->has('show_in_requisition') ? true : false,
                 'updated_by' => Auth::id(),
             ]);
 

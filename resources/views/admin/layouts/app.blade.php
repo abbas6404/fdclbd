@@ -35,6 +35,16 @@
             Adjust values as needed for other screen sizes.
         -->
         <style>
+            /* Hide number input spinner arrows globally */
+            input[type="number"]::-webkit-outer-spin-button,
+            input[type="number"]::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            input[type="number"] {
+                -moz-appearance: textfield;
+            }
+            
             /* Responsive .form-control-sm for all sizes, but tweak for large screens */
             @media (max-width: 1200px) {
                 .form-control-sm {

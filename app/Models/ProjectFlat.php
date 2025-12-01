@@ -28,6 +28,11 @@ class ProjectFlat extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class, 'flat_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

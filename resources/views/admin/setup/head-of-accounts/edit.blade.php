@@ -129,6 +129,28 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="show_in_requisition" 
+                                   name="show_in_requisition" 
+                                   value="1"
+                                   {{ old('show_in_requisition', $account->show_in_requisition) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold small" for="show_in_requisition">
+                                Show in Requisition
+                            </label>
+                            <small class="form-text text-muted d-block">Check this to display this account in requisition dropdown</small>
+                        </div>
+                        @error('show_in_requisition')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-end gap-2 mt-4">
                 <a href="{{ route('admin.setup.head-of-accounts.index') }}" class="btn btn-secondary btn-sm">
                     <i class="fas fa-times me-1"></i>Cancel

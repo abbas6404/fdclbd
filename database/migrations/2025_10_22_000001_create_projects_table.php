@@ -17,9 +17,13 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('address');
             $table->string('facing')->nullable(); // North, South, East, West
-            $table->decimal('building_height', 10, 2)->nullable(); // in feet (as number)
             $table->decimal('land_area', 10, 2)->nullable(); // in square feet (as number)
             $table->integer('total_floors')->nullable(); // total number of floors
+            $table->integer('storey')->nullable(); // Storey/Tola (number of storey)
+            
+            $table->string('land_owner_name')->nullable(); // Land owner name
+            $table->string('land_owner_nid')->nullable(); // Land owner NID
+            $table->string('land_owner_phone')->nullable(); // Land owner phone
             
             $table->date('project_launching_date')->nullable();
             $table->date('project_hand_over_date')->nullable();

@@ -123,10 +123,9 @@
                                         <tr>
                                             <th class="text-center" style="width: 5%;">S.No</th>
                                             <th style="width: 18%;">Expense Head</th>
-                                            <th style="width: 35%;">Description</th>
-                                            <th style="width: 10%;">Qty</th>
-                                            <th style="width: 10%;">Rate</th>
-                                            <th style="width: 12%;">Amount</th>
+                                            <th style="width: 30%;">Description</th>
+                                            <th style="width: 8%;">Qty</th>
+                                            <th style="width: 8%;">Unit</th>
                                             <th style="width: 10%;">Action</th>
                                         </tr>
                                     </thead>
@@ -153,21 +152,18 @@
                                                        class="form-control form-control-sm border-0 rounded-0 text-end" 
                                                        wire:model.blur="items.{{ $index }}.qty"
                                                            placeholder="Qty" 
-                                                           min="0.01" 
-                                                       step="0.01"
+                                                           min="1" 
+                                                       step="1"
                                                        style="width: 100%; height: 100%; min-height: 38px;">
                                             </td>
                                             <td class="p-0">
-                                                    <input type="number" 
-                                                       class="form-control form-control-sm border-0 rounded-0 text-end" 
-                                                       wire:model.blur="items.{{ $index }}.rate"
-                                                           placeholder="Rate" 
-                                                           min="0" 
-                                                       step="0.01"
-                                                       style="width: 100%; height: 100%; min-height: 38px;">
-                                            </td>
-                                            <td class="align-middle text-end">
-                                                {{ number_format($item['amount'] ?? 0, 2) }}
+                                                    <select class="form-control form-control-sm border-0 rounded-0" 
+                                                            wire:model="items.{{ $index }}.unit"
+                                                            style="width: 100%; height: 100%; min-height: 38px;">
+                                                        @foreach($unitOptions as $key => $label)
+                                                            <option value="{{ $key }}">{{ $label }}</option>
+                                                        @endforeach
+                                                    </select>
                                             </td>
                                             <td class="align-middle text-center">
                                         <button type="button" 
@@ -181,9 +177,7 @@
                                     </tbody>
                                     <tfoot class="table-light">
                                         <tr>
-                                            <th class="text-end" colspan="2">Total Items: {{ count($items) }}</th>
-                                            <th colspan="2" class="text-end">Total Amount:</th>
-                                            <th class="text-end">{{ number_format($total_amount, 2) }}</th>
+                                            <th class="text-end" colspan="5">Total Items: {{ count($items) }}</th>
                                             <th></th>
                                         </tr>
                                     </tfoot>

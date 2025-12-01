@@ -29,7 +29,6 @@ class DebitVoucherSeeder extends Seeder
                 'voucher_date' => Carbon::now()->subDays(5),
                 'remarks' => 'Office supplies payment',
                 'total_amount' => 5000,
-                'treasury_account_id' => $treasuryAccount->id,
                 'created_by' => 1,
                 'updated_by' => 1,
                 'created_at' => now(),
@@ -40,7 +39,6 @@ class DebitVoucherSeeder extends Seeder
                 'voucher_date' => Carbon::now()->subDays(3),
                 'remarks' => 'Utility bill payment',
                 'total_amount' => 8000,
-                'treasury_account_id' => $treasuryAccount->id,
                 'created_by' => 1,
                 'updated_by' => 1,
                 'created_at' => now(),
@@ -55,6 +53,7 @@ class DebitVoucherSeeder extends Seeder
             DB::table('debit_voucher_items')->insert([
                 'debit_voucher_id' => $voucherId,
                 'head_of_account_id' => $expenseAccount->id,
+                'treasury_account_id' => $treasuryAccount->id,
                 'amount' => $voucher['total_amount'],
                 'description' => 'Payment for ' . $voucher['remarks'],
                 'created_by' => 1,

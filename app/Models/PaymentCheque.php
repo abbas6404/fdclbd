@@ -17,6 +17,7 @@ class PaymentCheque extends Model
         'bank_name',
         'cheque_amount',
         'cheque_date',
+        'bank_approved',
         'created_by',
         'updated_by',
     ];
@@ -24,6 +25,7 @@ class PaymentCheque extends Model
     protected $casts = [
         'cheque_amount' => 'integer',
         'cheque_date' => 'datetime',
+        'bank_approved' => 'boolean',
     ];
 
     // Relationships

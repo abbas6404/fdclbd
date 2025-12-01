@@ -17,6 +17,10 @@ class Project extends Model
         'building_height',
         'land_area',
         'total_floors',
+        'storey',
+        'land_owner_name',
+        'land_owner_nid',
+        'land_owner_phone',
         'project_launching_date',
         'project_hand_over_date',
         'status',
@@ -33,6 +37,11 @@ class Project extends Model
     public function flats()
     {
         return $this->hasMany(ProjectFlat::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class, 'project_id');
     }
 
     public function createdBy()

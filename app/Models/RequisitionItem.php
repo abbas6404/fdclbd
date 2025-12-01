@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class RequisitionItem extends Model
 {
@@ -13,33 +14,20 @@ class RequisitionItem extends Model
 
     protected $fillable = [
         'requisition_id',
-        'chart_of_account_id',
+        'head_of_account_id',
         'description',
+        'unit',
         'qty',
-        'rate',
-        'amount',
+        'confirmation_status',
+        'created_by',
+        'updated_by',
+        'change_history',
     ];
 
     protected $casts = [
-        'qty' => 'decimal:2',
-        'rate' => 'decimal:2',
-        'amount' => 'decimal:2',
+        'qty' => 'integer',
+        'change_history' => 'array',
     ];
-
-    /**
-     * Boot the model.
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Auto-calculate amount when qty or rate changes
-        static::saving(function ($item) {
-            if ($item->qty && $item->rate) {
-                $item->amount = $item->qty * $item->rate;
-            }
-        });
-    }
 
     // Relationships
     public function requisition()
@@ -47,17 +35,58 @@ class RequisitionItem extends Model
         return $this->belongsTo(Requisition::class, 'requisition_id');
     }
 
-    public function chartOfAccount()
+    public function headOfAccount()
     {
-        return $this->belongsTo(HeadOfAccount::class, 'chart_of_account_id');
+        return $this->belongsTo(HeadOfAccount::class, 'head_of_account_id');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     /**
-     * Calculate amount based on qty and rate
+     * Track changes to the model
      */
-    public function calculateAmount()
+    protected static function boot()
     {
-        $this->amount = $this->qty * $this->rate;
-        return $this->amount;
+        parent::boot();
+
+        static::updating(function ($item) {
+            $original = $item->getOriginal();
+            $changes = [];
+            $trackableFields = ['unit', 'qty', 'description', 'confirmation_status'];
+
+            foreach ($trackableFields as $field) {
+                if ($item->isDirty($field)) {
+                    $changes[] = [
+                        'field' => $field,
+                        'old_value' => $original[$field] ?? null,
+                        'new_value' => $item->$field,
+                        'changed_by' => Auth::id(),
+                        'changed_at' => now()->toDateTimeString(),
+                    ];
+                }
+            }
+
+            if (!empty($changes)) {
+                $history = $item->change_history ?? [];
+                $history = array_merge($history, $changes);
+                $item->change_history = $history;
+            }
+        });
+    }
+
+    /**
+     * Get change history as formatted array
+     */
+    public function getChangeHistory()
+    {
+        return $this->change_history ?? [];
     }
 }

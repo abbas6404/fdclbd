@@ -87,7 +87,6 @@ class ReportTestDataSeeder extends Seeder
                 'voucher_date' => $voucherDate,
                 'remarks' => $expenseTypes[array_rand($expenseTypes)] . ' - ' . $voucherDate->format('M Y'),
                 'total_amount' => $amount,
-                'treasury_account_id' => $treasuryAccount->id,
                 'created_by' => $userId,
                 'updated_by' => $userId,
                 'created_at' => $voucherDate,
@@ -97,6 +96,7 @@ class ReportTestDataSeeder extends Seeder
             DB::table('debit_voucher_items')->insert([
                 'debit_voucher_id' => $voucherId,
                 'head_of_account_id' => $expenseAccount->id,
+                'treasury_account_id' => $treasuryAccount->id,
                 'amount' => $amount,
                 'description' => $expenseTypes[array_rand($expenseTypes)],
                 'created_by' => $userId,
@@ -140,7 +140,6 @@ class ReportTestDataSeeder extends Seeder
                 'voucher_date' => $voucherDate,
                 'remarks' => $incomeTypes[array_rand($incomeTypes)] . ' - ' . $voucherDate->format('M Y'),
                 'total_amount' => $amount,
-                'treasury_account_id' => $treasuryAccount->id,
                 'created_by' => $userId,
                 'updated_by' => $userId,
                 'created_at' => $voucherDate,
@@ -150,6 +149,7 @@ class ReportTestDataSeeder extends Seeder
             DB::table('credit_voucher_items')->insert([
                 'credit_voucher_id' => $voucherId,
                 'head_of_account_id' => $incomeAccount->id,
+                'treasury_account_id' => $treasuryAccount->id,
                 'amount' => $amount,
                 'description' => $incomeTypes[array_rand($incomeTypes)],
                 'created_by' => $userId,

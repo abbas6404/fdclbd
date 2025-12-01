@@ -1,10 +1,13 @@
 @permission('system.dashboard')
 <!-- Sidebar -->
 <div class="sidebar">
-    <div class="sidebar-brand">
-        <div class="sidebar-logo">
-            
-            <span class="fw-bold px-2">FDCL BD</span>
+    <div class="sidebar-brand p-0" style="background: linear-gradient(135deg,rgba(97, 255, 97, 0.14) 20%,rgba(200, 255, 205, 0.25) 100%); border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;">
+        <div class="sidebar-logo d-flex align-items-center justify-content-center" style="height: 120px;">
+            @if(file_exists(public_path('images/logo.png')))
+                <img class="fw-bold px-2" src="{{ asset('images/logo.png') }}" alt="FDCL BD Logo" style="height: 120px; width: auto; margin:auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.20));">
+            @else
+                <span class="fw-bold px-2 fs-3 text-white" style="text-shadow: 1px 1px 6px #26c6da;">FDCL BD</span>
+            @endif
         </div>
     </div>
   

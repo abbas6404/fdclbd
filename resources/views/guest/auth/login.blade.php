@@ -5,7 +5,7 @@
 @push('styles')
 <style>
     body {
-        background-image: url("{{ asset('images/principles-of-construction-design-1024x699.jpg') }}");
+        background-image: url("{{ asset('images/bg-login.jpg') }}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -413,10 +413,14 @@
     <div class="login-wrapper">
         <div class="login-card">
             <div class="login-header">
-                <div class="login-logo">
-                    <div class="login-logo-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
+                <div class="login-logo text-center ">
+                    @if(file_exists(public_path('images/logo.png')))
+                        <img src="{{ asset('images/logo.png') }}" alt="FDCL BD Logo" style="height:100px; width:auto;">
+                    @else
+                        <div class="login-logo-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    @endif
                 </div>
                 <h1 class="login-title">Welcome Back</h1>
                 <p class="login-subtitle">Sign in to Formonic Design & Construction Ltd</p>

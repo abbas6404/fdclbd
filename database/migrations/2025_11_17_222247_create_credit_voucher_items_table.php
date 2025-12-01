@@ -15,14 +15,22 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('credit_voucher_id')->index();
             $table->unsignedBigInteger('head_of_account_id')->index(); // Which account is credited
+            $table->unsignedBigInteger('treasury_account_id')->nullable()->index(); // Treasury account for this item
+            $table->unsignedBigInteger('purchase_order_id')->nullable()->index(); // Related purchase order
+            $table->unsignedBigInteger('project_id')->nullable()->index(); // Related project
             $table->bigInteger('amount'); // Stored in paise, max: 9,223,372,036,854,775,807
             $table->text('description')->nullable();
+            $table->string('bank_name')->nullable(); // Bank name for payment
+            $table->string('check_number')->nullable(); // Check number or transaction ID
             
             $table->timestamps();
             $table->softDeletes();
 
             $table->foreign('credit_voucher_id')->references('id')->on('credit_vouchers')->onDelete('cascade');
             $table->foreign('head_of_account_id')->references('id')->on('head_of_accounts')->onDelete('restrict');
+            $table->foreign('treasury_account_id')->references('id')->on('treasury_accounts')->onDelete('set null');
+            $table->foreign('purchase_order_id')->references('id')->on('purchase_orders')->onDelete('set null');
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('set null');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('updated_by')->nullable();

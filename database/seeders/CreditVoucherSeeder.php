@@ -29,7 +29,6 @@ class CreditVoucherSeeder extends Seeder
                 'voucher_date' => Carbon::now()->subDays(4),
                 'remarks' => 'Service income received',
                 'total_amount' => 15000,
-                'treasury_account_id' => $treasuryAccount->id,
                 'created_by' => 1,
                 'updated_by' => 1,
                 'created_at' => now(),
@@ -40,7 +39,6 @@ class CreditVoucherSeeder extends Seeder
                 'voucher_date' => Carbon::now()->subDays(2),
                 'remarks' => 'Consultation fee received',
                 'total_amount' => 12000,
-                'treasury_account_id' => $treasuryAccount->id,
                 'created_by' => 1,
                 'updated_by' => 1,
                 'created_at' => now(),
@@ -55,6 +53,7 @@ class CreditVoucherSeeder extends Seeder
             DB::table('credit_voucher_items')->insert([
                 'credit_voucher_id' => $voucherId,
                 'head_of_account_id' => $incomeAccount->id,
+                'treasury_account_id' => $treasuryAccount->id,
                 'amount' => $voucher['total_amount'],
                 'description' => 'Income from ' . $voucher['remarks'],
                 'created_by' => 1,

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('bank_name');
             $table->integer('cheque_amount');
             $table->dateTime('cheque_date')->nullable();
+            $table->boolean('bank_approved')->default(false); // Bank approval status
 
-            
             $table->timestamps();
             $table->softDeletes();
 

@@ -36,10 +36,34 @@ class Index extends Component
     public $project_results = [];
     
     // Requisition items
-    public $items = []; // Array of items with chart_of_account_id, description, qty, rate, amount
+    public $items = []; // Array of items with head_of_account_id, description, unit, qty
+    
+    // Unit options for dropdown
+    public $unitOptions = [
+        'pcs' => 'Pieces',
+        'kg' => 'Kilogram',
+        'g' => 'Gram',
+        'ltr' => 'Liter',
+        'ml' => 'Milliliter',
+        'm' => 'Meter',
+        'cm' => 'Centimeter',
+        'sqft' => 'Square Feet',
+        'sqm' => 'Square Meter',
+        'box' => 'Box',
+        'pack' => 'Pack',
+        'set' => 'Set',
+        'pair' => 'Pair',
+        'dozen' => 'Dozen',
+        'bundle' => 'Bundle',
+        'roll' => 'Roll',
+        'unit' => 'Unit',
+    ];
     
     // Calculated totals
     public $total_amount = 0;
+    
+    // Track last used unit
+    public $lastUsedUnit = 'pcs';
 
     public function mount()
     {
@@ -53,10 +77,10 @@ class Index extends Component
 
     public function loadRecentAccounts()
     {
-        // Load expense accounts (level 4 - detail accounts)
+        // Load expense accounts that are marked to show in requisition
         $this->account_results = HeadOfAccount::where('account_type', 'expense')
-            ->where('account_level', '4')
             ->where('status', 'active')
+            ->where('show_in_requisition', true)
             ->orderBy('account_name', 'asc')
             ->limit(20)
             ->get()
@@ -163,6 +187,7 @@ class Index extends Component
 
         $this->account_results = HeadOfAccount::where('account_type', 'expense')
             ->where('status', 'active')
+            ->where('show_in_requisition', true)
             ->where('account_name', 'like', "%{$this->account_search}%")
             ->orderBy('account_name', 'asc')
             ->limit(20)
@@ -183,17 +208,19 @@ class Index extends Component
         if ($account) {
             // Check if account is already in items
             $exists = collect($this->items)->contains(function($item) use ($accountId) {
-                return $item['chart_of_account_id'] == $accountId;
+                return $item['head_of_account_id'] == $accountId;
             });
             
             if (!$exists) {
+                // Use account's last_used_unit if available, otherwise use session's lastUsedUnit, otherwise default to 'pcs'
+                $defaultUnit = $account->last_used_unit ?? $this->lastUsedUnit ?? 'pcs';
+                
                 $this->items[] = [
-                    'chart_of_account_id' => $account->id,
+                    'head_of_account_id' => $account->id,
                     'account_name' => $account->account_name,
                     'description' => '',
+                    'unit' => $defaultUnit,
                     'qty' => 1,
-                    'rate' => 0,
-                    'amount' => 0,
                 ];
             }
             
@@ -212,22 +239,35 @@ class Index extends Component
 
     public function updatedItems($value, $key)
     {
-        // Auto-calculate amount when qty or rate changes
-        if (str_contains($key, '.qty') || str_contains($key, '.rate')) {
+        // Track last used unit when unit changes and save to account
+        if (str_contains($key, '.unit')) {
+            $parts = explode('.', $key);
+            $index = (int) $parts[0];
+            if (isset($this->items[$index]) && isset($this->items[$index]['unit'])) {
+                $newUnit = $this->items[$index]['unit'];
+                $this->lastUsedUnit = $newUnit;
+                
+                // Save to account's last_used_unit in database
+                $accountId = $this->items[$index]['head_of_account_id'] ?? null;
+                if ($accountId) {
+                    HeadOfAccount::where('id', $accountId)->update(['last_used_unit' => $newUnit]);
+                }
+            }
+        }
+        // Handle qty changes if needed
+        if (str_contains($key, '.qty')) {
             $parts = explode('.', $key);
             $index = (int) $parts[0];
             if (isset($this->items[$index])) {
-                $qty = (float) ($this->items[$index]['qty'] ?? 0);
-                $rate = (float) ($this->items[$index]['rate'] ?? 0);
-                $this->items[$index]['amount'] = round($qty * $rate, 2);
-                $this->calculateTotal();
+                $qty = (int) ($this->items[$index]['qty'] ?? 0);
             }
         }
     }
 
     public function calculateTotal()
     {
-        $this->total_amount = collect($this->items)->sum('amount');
+        // Total amount is not calculated from items anymore
+        $this->total_amount = 0;
     }
 
     public function saveRequisition()
@@ -239,11 +279,10 @@ class Index extends Component
             'selected_employee_id' => 'required|exists:employees,id',
             'selected_project_id' => 'nullable|exists:projects,id',
             'items' => 'required|array|min:1',
-            'items.*.chart_of_account_id' => 'required|exists:head_of_accounts,id',
+            'items.*.head_of_account_id' => 'required|exists:head_of_accounts,id',
             'items.*.description' => 'nullable|string|max:500',
-            'items.*.qty' => 'required|numeric|min:0.01',
-            'items.*.rate' => 'required|numeric|min:0',
-            'items.*.amount' => 'required|numeric|min:0',
+            'items.*.unit' => 'required|string',
+            'items.*.qty' => 'required|integer|min:1',
         ], [
             'requisition_date.required' => 'Requisition date is required.',
             'required_date.required' => 'Required date is required.',
@@ -252,10 +291,9 @@ class Index extends Component
             'selected_employee_id.exists' => 'Selected employee is invalid.',
             'items.required' => 'Please add at least one item.',
             'items.min' => 'Please add at least one item.',
+            'items.*.unit.required' => 'Unit is required.',
             'items.*.qty.required' => 'Quantity is required.',
-            'items.*.qty.min' => 'Quantity must be greater than 0.',
-            'items.*.rate.required' => 'Rate is required.',
-            'items.*.rate.min' => 'Rate must be 0 or greater.',
+            'items.*.qty.min' => 'Quantity must be at least 1.',
         ]);
 
         try {
@@ -282,11 +320,12 @@ class Index extends Component
             foreach ($this->items as $item) {
                 RequisitionItem::create([
                     'requisition_id' => $requisition->id,
-                    'chart_of_account_id' => $item['chart_of_account_id'],
+                    'head_of_account_id' => $item['head_of_account_id'],
                     'description' => $item['description'] ?? '',
-                    'qty' => $item['qty'],
-                    'rate' => $item['rate'],
-                    'amount' => $item['amount'],
+                    'unit' => $item['unit'] ?? 'pcs',
+                    'qty' => (int) $item['qty'],
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
                 ]);
             }
 
