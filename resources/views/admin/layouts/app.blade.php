@@ -29,6 +29,7 @@
         @livewireStyles
         
         @yield('styles')
+        @stack('styles')
 
         <!--
             The following CSS is optimized for 18-inch monitor displays.

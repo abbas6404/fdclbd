@@ -19,13 +19,14 @@ class Edit extends Component
     public $flat_size = '';
     public $status = 'available';
     public $project_id = '';
+    public $showFlatTypeInfo = false;
 
     protected $rules = [
         'flat_number' => 'required|string|max:255',
         'flat_type' => 'required|string|max:255',
         'floor_number' => 'required|string|max:255',
-        'flat_size' => 'required|string|max:255',
-        'status' => 'required|in:available,sold,reserved',
+        'flat_size' => 'required|numeric|min:0',
+        'status' => 'required|in:available,sold,reserved,land_owner',
         'project_id' => 'required|exists:projects,id',
     ];
 

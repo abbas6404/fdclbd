@@ -1,10 +1,77 @@
 <div class="container-fluid">
+    <!-- Flat Type Info Modal -->
+    @if($showFlatTypeInfo)
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1" wire:click.self="$set('showFlatTypeInfo', false)">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Flat Type Meanings
+                    </h5>
+                    <button type="button" class="btn-close" wire:click="$set('showFlatTypeInfo', false)" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Flat Type</th>
+                                    <th>Meaning</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Studio</td><td>Single room + bathroom</td></tr>
+                                <tr><td>1BHK</td><td>1 Bedroom, Hall, Kitchen</td></tr>
+                                <tr><td>2BHK</td><td>2 Bedrooms, Hall, Kitchen</td></tr>
+                                <tr><td>3BHK</td><td>3 Bedrooms, Hall, Kitchen</td></tr>
+                                <tr><td>4BHK</td><td>4 Bedrooms, Hall, Kitchen</td></tr>
+                                <tr><td>Duplex</td><td>Two-floor apartment</td></tr>
+                                <tr><td>Triplex</td><td>Three-floor apartment</td></tr>
+                                <tr><td>Penthouse</td><td>Top-floor luxury flat</td></tr>
+                                <tr><td>Commercial</td><td>Shop/Office unit</td></tr>
+                                <tr><td>Office</td><td>Office space</td></tr>
+                                <tr><td>Shop</td><td>Shop room</td></tr>
+                                <tr><td>Land Owner Share</td><td>Flats reserved for land owners</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="$set('showFlatTypeInfo', false)">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    
     <div class="card shadow">
-        <div class="card-header bg-white py-1">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white py-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h6 class="card-title mb-0 text-primary">
                     <i class="fas fa-plus-circle me-2"></i> Add New Flat
                 </h6>
+                @if($selected_project)
+                    <div class="flex-grow-1 d-flex justify-content-center align-items-center gap-3">
+                        <div class="fw-bold text-primary">
+                            <i class="fas fa-building me-1"></i>{{ $selected_project['project_name'] }}
+                        </div>
+                        @if($selected_project['address'])
+                        <div class="small text-muted">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ Str::limit($selected_project['address'], 40) }}
+                        </div>
+                        @endif
+                        @if($selected_project['facing'])
+                        <div class="small text-muted">
+                            <i class="fas fa-compass me-1"></i>{{ $selected_project['facing'] }}
+                        </div>
+                        @endif
+                        @if($selected_project['land_owner_name'])
+                        <div class="small text-muted">
+                            <i class="fas fa-user-tie me-1"></i>{{ $selected_project['land_owner_name'] }}
+                        </div>
+                        @endif
+                    </div>
+                @endif
             </div>
         </div>
         <div class="card-body py-3">
@@ -49,9 +116,16 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th class="fw-bold">Flat Number <span class="text-danger">*</span></th>
-                                            <th class="fw-bold">Type <span class="text-danger">*</span></th>
+                                            <th class="fw-bold">
+                                                Type <span class="text-danger">*</span>
+                                                <i class="fas fa-info-circle text-info ms-1" 
+                                                   wire:click="$set('showFlatTypeInfo', true)"
+                                                   style="cursor: help;"
+                                                   title="Click to view flat type meanings"></i>
+                                            </th>
                                             <th class="fw-bold">Floor <span class="text-danger">*</span></th>
                                             <th class="fw-bold">Size (sq ft) <span class="text-danger">*</span></th>
+                                            <th class="fw-bold">Status <span class="text-danger">*</span></th>
                                             <th class="fw-bold text-center" style="width: 80px;">Action</th>
                                         </tr>
                                     </thead>
@@ -86,11 +160,25 @@
                                                 @enderror
                                             </td>
                                             <td>
-                                                <input type="text" 
+                                                <input type="number" 
                                                        class="form-control form-control-sm @error('flats_to_add.'.$index.'.flat_size') is-invalid @enderror" 
                                                        wire:model.blur="flats_to_add.{{ $index }}.flat_size" 
-                                                       placeholder="Size (e.g., 1200 sq ft)">
+                                                       placeholder="Size (e.g., 1200)"
+                                                       min="0"
+                                                       step="0.01">
                                                 @error('flats_to_add.'.$index.'.flat_size')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </td>
+                                            <td>
+                                                <select class="form-select form-select-sm @error('flats_to_add.'.$index.'.status') is-invalid @enderror" 
+                                                        wire:model.blur="flats_to_add.{{ $index }}.status">
+                                                    <option value="available">Available</option>
+                                                    <option value="sold">Sold</option>
+                                                    <option value="reserved">Reserved</option>
+                                                    <option value="land_owner">Land Owner</option>
+                                                </select>
+                                                @error('flats_to_add.'.$index.'.status')
                                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                                 @enderror
                                             </td>

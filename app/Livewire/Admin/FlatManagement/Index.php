@@ -15,9 +15,13 @@ class Index extends Component
     public $search = '';
     public $projectFilter = '';
     public $flatTypeFilter = '';
+    public $statusFilter = '';
+    public $sizeFrom = '';
+    public $sizeTo = '';
     public $sortField = 'id';
     public $sortDirection = 'desc';
     public $perPage = 25;
+    public $showArchived = false; // Toggle to show archived flats
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -38,6 +42,21 @@ class Index extends Component
     }
 
     public function updatingFlatTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSizeFrom()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSizeTo()
     {
         $this->resetPage();
     }
@@ -70,17 +89,68 @@ class Index extends Component
         }
     }
 
+    public function restoreFlat($flatId)
+    {
+        try {
+            $flat = ProjectFlat::withTrashed()->findOrFail($flatId);
+            $flat->restore();
+            
+            $this->dispatch('show-alert', [
+                'type' => 'success',
+                'message' => 'Flat restored successfully!'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error restoring flat: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function permanentDeleteFlat($flatId)
+    {
+        try {
+            $flat = ProjectFlat::withTrashed()->findOrFail($flatId);
+            $flat->forceDelete();
+            
+            $this->dispatch('show-alert', [
+                'type' => 'success',
+                'message' => 'Flat permanently deleted!'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error permanently deleting flat: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function toggleArchive()
+    {
+        $this->showArchived = !$this->showArchived;
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = ProjectFlat::with('project');
 
+        // Filter by archived status
+        if ($this->showArchived) {
+            $query->onlyTrashed(); // Show only archived (soft deleted) flats
+        }
+        // When showArchived is false, default behavior excludes soft deleted records
+
         // Apply search filter
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('flat_number', 'like', '%' . $this->search . '%')
-                  ->orWhere('flat_type', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('project', function ($projectQuery) {
-                      $projectQuery->where('project_name', 'like', '%' . $this->search . '%');
+                $searchTerm = '%' . $this->search . '%';
+                $q->where('flat_number', 'like', $searchTerm)
+                  ->orWhere('flat_type', 'like', $searchTerm)
+                  ->orWhere('floor_number', 'like', $searchTerm)
+                  ->orWhereHas('project', function ($projectQuery) use ($searchTerm) {
+                      $projectQuery->where('project_name', 'like', $searchTerm)
+                                   ->orWhere('address', 'like', $searchTerm);
                   });
             });
         }
@@ -95,6 +165,19 @@ class Index extends Component
             $query->where('flat_type', $this->flatTypeFilter);
         }
 
+        // Apply status filter
+        if ($this->statusFilter) {
+            $query->where('status', $this->statusFilter);
+        }
+
+        // Apply size range filter
+        if ($this->sizeFrom) {
+            $query->where('flat_size', '>=', $this->sizeFrom);
+        }
+        if ($this->sizeTo) {
+            $query->where('flat_size', '<=', $this->sizeTo);
+        }
+
         // Apply sorting
         $query->orderBy($this->sortField, $this->sortDirection);
 
@@ -105,6 +188,7 @@ class Index extends Component
             'total' => ProjectFlat::count(),
             'available' => ProjectFlat::where('status', 'available')->count(),
             'sold' => ProjectFlat::where('status', 'sold')->count(),
+            'land_owner' => ProjectFlat::where('status', 'land_owner')->count(),
             'projects_count' => Project::count(),
         ];
 

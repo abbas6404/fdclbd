@@ -23,11 +23,6 @@ return new class extends Migration
 
             $table->date('sale_date');
             
-            // Flat Owner Information
-            $table->string('flat_owner_name')->nullable(); // Flat owner name
-            $table->string('flat_owner_nid')->nullable(); // Flat owner NID
-            $table->string('flat_owner_phone')->nullable(); // Flat owner phone
-            
             // Nominee Information
             $table->string('nominee_name')->nullable(); // Nominee name
             $table->string('nominee_nid')->nullable(); // Nominee NID

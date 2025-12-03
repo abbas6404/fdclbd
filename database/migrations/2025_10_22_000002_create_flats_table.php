@@ -14,15 +14,18 @@ return new class extends Migration
     {
         Schema::create('flats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
+            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade')->index();
             $table->string('flat_number')->index(); // A-101, B-205, etc.
-            $table->string('flat_type')->nullable()->index();  // 2BHK, 3BHK, Studio, etc.
+            $table->string('flat_type')->nullable()->index();  // 1BHK,2BHK,3BHK,4BHK,Penthouse,Duplex,Commercial
+            
             $table->string('floor_number')->nullable()->index();
             $table->decimal('flat_size', 10, 2)->nullable(); // in square feet (as number)
           
             
-            $table->enum('status', ['available', 'sold', 'reserved', 'land_owner'])->default('available');
+            $table->enum('status', ['available', 'sold', 'reserved', 'land_owner'])->default('available')->index();
 
+            // Unique constraint: flat_number must be unique within a project
+            $table->unique(['project_id', 'flat_number']);
 
             $table->timestamps();
             $table->softDeletes();

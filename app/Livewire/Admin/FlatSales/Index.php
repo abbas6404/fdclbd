@@ -3,15 +3,21 @@
 namespace App\Livewire\Admin\FlatSales;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\Customer;
 use App\Models\ProjectFlat;
+use App\Models\Project;
 use App\Models\SalesAgent;
 use App\Models\FlatSale;
+use App\Models\Attachment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Index extends Component
 {
+    use WithFileUploads;
+
     // Customer fields
     public $customer_search = '';
     public $customer_id = '';
@@ -21,10 +27,24 @@ class Index extends Component
     public $customer_nid = '';
     public $customer_address = '';
     
+    // Nominee Information
+    public $nominee_name = '';
+    public $nominee_nid = '';
+    public $nominee_phone = '';
+    public $nominee_relationship = '';
+    public $nominee_relationship_other = '';
+    
     // Seller/Sales Agent
     public $seller_search = '';
     public $seller_id = '';
     public $seller_name = '';
+    public $seller_phone = '';
+    public $seller_nid = '';
+    
+    // Project search
+    public $project_search = '';
+    public $selected_project_id = '';
+    public $selected_project = null;
     
     // Flat (Multiple)
     public $flat_search = '';
@@ -32,9 +52,14 @@ class Index extends Component
     
     // Search results
     public $customer_results = [];
+    public $project_results = [];
     public $flat_results = [];
     public $seller_results = [];
-    public $active_search_type = ''; // 'customer', 'flat', 'seller'
+    public $active_search_type = ''; // 'customer', 'flat', 'seller', 'project'
+    public $show_customer_dropdown = false;
+    public $show_project_dropdown = false;
+    public $show_seller_dropdown = false;
+    public $show_flat_dropdown = false;
     
     // Debounce timer
     public $search_debounce = 500;
@@ -74,10 +99,27 @@ class Index extends Component
         $this->active_search_type = 'seller';
     }
 
+    public function loadRecentProjects()
+    {
+        $this->project_results = Project::select('id', 'project_name', 'address')
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get()
+            ->toArray();
+        $this->active_search_type = 'project';
+    }
+
     public function loadRecentFlats()
     {
-        $this->flat_results = ProjectFlat::with('project')
-            ->where('status', 'available')
+        $query = ProjectFlat::with('project')
+            ->where('status', 'available');
+            
+        // Filter by selected project if any
+        if ($this->selected_project_id) {
+            $query->where('project_id', $this->selected_project_id);
+        }
+        
+        $this->flat_results = $query
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
@@ -89,6 +131,7 @@ class Index extends Component
                     'floor_number' => $flat->floor_number,
                     'flat_size' => $flat->flat_size,
                     'project_name' => $flat->project->project_name ?? 'N/A',
+                    'project_id' => $flat->project_id,
                     'status' => $flat->status,
                 ];
             })
@@ -98,34 +141,53 @@ class Index extends Component
 
     public function updatedCustomerSearch()
     {
+        $this->show_customer_dropdown = true;
         $this->active_search_type = 'customer';
         $this->searchCustomers();
     }
 
+    public function updatedProjectSearch()
+    {
+        $this->show_project_dropdown = true;
+        $this->active_search_type = 'project';
+        $this->searchProjects();
+    }
+
     public function updatedFlatSearch()
     {
+        $this->show_flat_dropdown = true;
         $this->active_search_type = 'flat';
         $this->searchFlats();
     }
 
     public function updatedSellerSearch()
     {
+        $this->show_seller_dropdown = true;
         $this->active_search_type = 'seller';
         $this->searchSellers();
     }
 
     public function showRecentCustomers()
     {
+        $this->show_customer_dropdown = true;
         $this->loadRecentCustomers();
     }
 
     public function showRecentAgents()
     {
+        $this->show_seller_dropdown = true;
         $this->loadRecentAgents();
+    }
+
+    public function showRecentProjects()
+    {
+        $this->show_project_dropdown = true;
+        $this->loadRecentProjects();
     }
 
     public function showRecentFlats()
     {
+        $this->show_flat_dropdown = true;
         $this->loadRecentFlats();
     }
 
@@ -152,6 +214,22 @@ class Index extends Component
         ]);
     }
 
+    public function searchProjects()
+    {
+        if (strlen($this->project_search) < 2) {
+            $this->loadRecentProjects();
+            return;
+        }
+
+        $this->project_results = Project::select('id', 'project_name', 'address')
+            ->where('project_name', 'like', "%{$this->project_search}%")
+            ->orWhere('address', 'like', "%{$this->project_search}%")
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get()
+            ->toArray();
+    }
+
     public function searchFlats()
     {
         if (strlen($this->flat_search) < 2) {
@@ -160,13 +238,20 @@ class Index extends Component
             return;
         }
 
-        $this->flat_results = ProjectFlat::with('project')
-            ->where('flat_number', 'like', "%{$this->flat_search}%")
+        $query = ProjectFlat::with('project')
+            ->where(function($q) {
+                $q->where('flat_number', 'like', "%{$this->flat_search}%")
             ->orWhere('flat_type', 'like', "%{$this->flat_search}%")
-            ->orWhereHas('project', function($q) {
-                $q->where('project_name', 'like', "%{$this->flat_search}%");
+                  ->orWhere('floor_number', 'like', "%{$this->flat_search}%");
             })
-            ->where('status', 'available')
+            ->where('status', 'available');
+            
+        // Filter by selected project if any
+        if ($this->selected_project_id) {
+            $query->where('project_id', $this->selected_project_id);
+        }
+
+        $this->flat_results = $query
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
@@ -178,15 +263,11 @@ class Index extends Component
                     'floor_number' => $flat->floor_number,
                     'flat_size' => $flat->flat_size,
                     'project_name' => $flat->project->project_name ?? 'N/A',
+                    'project_id' => $flat->project_id,
                     'status' => $flat->status,
                 ];
             })
             ->toArray();
-            
-        $this->dispatch('update-search-results', [
-            'type' => 'flat',
-            'results' => $this->flat_results
-        ]);
     }
 
     public function searchSellers()
@@ -222,15 +303,16 @@ class Index extends Component
             $this->customer_address = $customer->address ?? '';
             $this->customer_search = $customer->name;
             $this->customer_results = [];
-            // Keep showing recent customers after selection
-            $this->loadRecentCustomers();
-            
-            $this->dispatch('update-search-results', [
-                'type' => 'customer',
-                'results' => $this->customer_results
-            ]);
+            $this->show_customer_dropdown = false;
         }
     }
+
+    public $selected_flat_id = '';
+    public $selected_flat = null;
+    
+    // Document attachments
+    public $attachments = [];
+    public $tempFiles = [];
 
     public function selectFlat($flatId)
     {
@@ -241,6 +323,15 @@ class Index extends Component
                 return $item['id'] == $flatId;
             });
             if (!$exists) {
+                $this->selected_flat_id = $flat->id;
+                $this->selected_flat = [
+                    'id' => $flat->id,
+                    'flat_number' => $flat->flat_number,
+                    'flat_type' => $flat->flat_type,
+                    'flat_size' => $flat->flat_size,
+                    'floor_number' => $flat->floor_number,
+                    'project_name' => $flat->project->project_name ?? 'N/A',
+                ];
                 $this->selected_flats[] = [
                     'id' => $flat->id,
                     'flat_number' => $flat->flat_number,
@@ -252,15 +343,31 @@ class Index extends Component
                 ];
             }
             $this->flat_search = '';
-            // Keep showing recent flats after selection
-            $this->loadRecentFlats();
-            
-            $this->dispatch('update-search-results', [
-                'type' => 'flat',
-                'results' => $this->flat_results
-            ]);
+            $this->show_flat_dropdown = false;
         }
     }
+    
+    public function clearSelectedFlat()
+    {
+        $this->selected_flat_id = '';
+        $this->selected_flat = null;
+        $this->flat_search = '';
+    }
+
+    public function addAttachment()
+    {
+        $this->attachments[] = [
+            'document_name' => '',
+            'file' => null,
+        ];
+    }
+
+    public function removeAttachment($index)
+    {
+        unset($this->attachments[$index]);
+        $this->attachments = array_values($this->attachments);
+        }
+
     
     public function removeFlat($flatId)
     {
@@ -278,15 +385,11 @@ class Index extends Component
         if ($seller) {
             $this->seller_id = $seller->id;
             $this->seller_name = $seller->name;
+            $this->seller_phone = $seller->phone ?? '';
+            $this->seller_nid = $seller->nid_or_passport_number ?? '';
             $this->seller_search = $seller->name;
             $this->seller_results = [];
-            // Keep showing recent agents after selection
-            $this->loadRecentAgents();
-            
-            $this->dispatch('update-search-results', [
-                'type' => 'seller',
-                'results' => $this->seller_results
-            ]);
+            $this->show_seller_dropdown = false;
         }
     }
 
@@ -303,6 +406,34 @@ class Index extends Component
         $this->loadRecentCustomers();
     }
 
+    public function selectProject($projectId)
+    {
+        $project = Project::find($projectId);
+        if ($project) {
+            $this->selected_project_id = $project->id;
+            $this->selected_project = [
+                'id' => $project->id,
+                'project_name' => $project->project_name,
+                'address' => $project->address,
+            ];
+            $this->project_search = $project->project_name;
+            $this->project_results = [];
+            $this->show_project_dropdown = false;
+            // Load flats for selected project
+            $this->loadRecentFlats();
+        }
+    }
+
+    public function clearProject()
+    {
+        $this->selected_project_id = '';
+        $this->selected_project = null;
+        $this->project_search = '';
+        $this->show_project_dropdown = false;
+        // Reload all flats after clearing
+        $this->loadRecentFlats();
+    }
+
     public function clearFlat()
     {
         $this->flat_search = '';
@@ -315,9 +446,19 @@ class Index extends Component
     {
         $this->seller_id = '';
         $this->seller_name = '';
+        $this->seller_phone = '';
+        $this->seller_nid = '';
         $this->seller_search = '';
         // Reload recent agents after clearing
         $this->loadRecentAgents();
+    }
+
+    public function closeAllDropdowns()
+    {
+        $this->show_customer_dropdown = false;
+        $this->show_project_dropdown = false;
+        $this->show_seller_dropdown = false;
+        $this->show_flat_dropdown = false;
     }
 
     public function saveSale()
@@ -418,6 +559,10 @@ class Index extends Component
                     'refund_amount' => null,
                     'net_price' => $netPrice,
                     'sale_date' => now()->toDateString(),
+                    'nominee_name' => $this->nominee_name ?: null,
+                    'nominee_nid' => $this->nominee_nid ?: null,
+                    'nominee_phone' => $this->nominee_phone ?: null,
+                    'nominee_relationship' => $this->nominee_relationship === 'Other' ? $this->nominee_relationship_other : ($this->nominee_relationship ?: null),
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id(),
                 ]);
@@ -429,6 +574,33 @@ class Index extends Component
                 ]);
 
                 $saleCount++;
+            }
+
+            // Save attachments linked to the first selected flat
+            if (!empty($this->attachments) && !empty($this->selected_flats)) {
+                $firstFlatId = $this->selected_flats[0]['id'];
+                $displayOrder = 0;
+                
+                foreach ($this->attachments as $attachment) {
+                    if (isset($attachment['file']) && $attachment['file']) {
+                        $file = $attachment['file'];
+                        
+                        // Check if file is a Livewire temporary file
+                        if (is_object($file) && method_exists($file, 'getClientOriginalName')) {
+                            $extension = $file->getClientOriginalExtension();
+                            $fileName = time() . '_' . uniqid() . '.' . $extension;
+                            $filePath = $file->storeAs('document_soft_copy/flat_sale', $fileName, 'public');
+                            
+                            Attachment::create([
+                                'document_name' => $attachment['document_name'] ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                                'file_path' => $filePath,
+                                'file_size' => $file->getSize(),
+                                'display_order' => $displayOrder++,
+                                'flat_id' => $firstFlatId,
+                            ]);
+                        }
+                    }
+                }
             }
 
             DB::commit();
@@ -467,12 +639,25 @@ class Index extends Component
         $this->customer_email = '';
         $this->customer_nid = '';
         $this->customer_address = '';
+        $this->nominee_name = '';
+        $this->nominee_nid = '';
+        $this->nominee_phone = '';
+        $this->nominee_relationship = '';
+        $this->nominee_relationship_other = '';
         $this->seller_search = '';
         $this->seller_id = '';
         $this->seller_name = '';
+        $this->project_search = '';
+        $this->selected_project_id = '';
+        $this->selected_project = null;
         $this->flat_search = '';
+        $this->selected_flat_id = '';
+        $this->selected_flat = null;
         $this->selected_flats = [];
+        $this->attachments = [];
+        $this->tempFiles = [];
         $this->customer_results = [];
+        $this->project_results = [];
         $this->flat_results = [];
         $this->seller_results = [];
         // Reload recent customers after reset

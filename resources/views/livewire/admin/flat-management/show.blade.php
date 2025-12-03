@@ -47,13 +47,13 @@
                         </tr>
                         <tr>
                             <td class="fw-bold">Size:</td>
-                            <td>{{ $flat->flat_size ?? 'N/A' }}</td>
+                            <td>{{ $flat->flat_size ? number_format($flat->flat_size, 2) . ' sq ft' : 'N/A' }}</td>
                         </tr>
                         <tr>
                             <td class="fw-bold">Status:</td>
                             <td>
-                                <span class="badge bg-{{ $flat->status == 'available' ? 'success' : ($flat->status == 'sold' ? 'danger' : ($flat->status == 'reserved' ? 'warning' : 'info')) }}">
-                                    {{ ucfirst($flat->status ?? 'N/A') }}
+                                <span class="badge bg-{{ $flat->status == 'available' ? 'success' : ($flat->status == 'sold' ? 'danger' : ($flat->status == 'reserved' ? 'warning' : ($flat->status == 'land_owner' ? 'secondary' : 'info'))) }}">
+                                    {{ ucfirst(str_replace('_', ' ', $flat->status ?? 'N/A')) }}
                                 </span>
                             </td>
                         </tr>

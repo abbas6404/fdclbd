@@ -1,7 +1,7 @@
 <div class="container-fluid">
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card shadow border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -16,7 +16,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card shadow border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -31,7 +31,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card shadow border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -46,7 +46,22 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0 text-secondary">{{ number_format($stats['land_owner']) }}</h3>
+                            <p class="mb-0 text-muted small">Land Owner</p>
+                        </div>
+                        <div class="text-secondary">
+                            <i class="fas fa-user-tie fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
             <div class="card shadow border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -66,57 +81,64 @@
     <!-- Main Card -->
     <div class="card shadow border-0">
         <div class="card-header bg-white py-2">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h6 class="card-title mb-0 text-primary">
                     <i class="fas fa-home me-2"></i> All Flats
                 </h6>
-                <a href="{{ route('admin.project-flat.create') }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-plus me-1"></i> Add New Flat
-                </a>
+                <div class="d-flex gap-2">
+                    <button type="button" 
+                            class="btn btn-sm {{ $showArchived ? 'btn-success' : 'btn-outline-warning' }}"
+                            wire:click="toggleArchive"
+                            title="{{ $showArchived ? 'Show Active Flats' : 'Show Archived Flats' }}">
+                        <i class="fas fa-archive me-1"></i> {{ $showArchived ? 'Active' : 'Archive' }}
+                    </button>
+                    @if(!$showArchived)
+                    <a href="{{ route('admin.project-flat.create') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i> Add New Flat
+                    </a>
+                    @endif
+                </div>
             </div>
         </div>
         <div class="card-body py-3">
             <!-- Filters -->
             <div class="row mb-3 g-2">
+                <div class="col-md-2">
+                    <select class="form-select form-select-sm" wire:model.live="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="sold">Sold</option>
+                        <option value="reserved">Reserved</option>
+                        <option value="land_owner">Land Owner</option>
+                    </select>
+                </div>
                 <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light py-0">Size</span>
+                        <input type="number" 
+                               class="form-control form-control-sm" 
+                               placeholder="From" 
+                               wire:model.live.debounce.300ms="sizeFrom"
+                               min="0"
+                               step="0.01">
+                        <input type="number" 
+                               class="form-control form-control-sm" 
+                               placeholder="To" 
+                               wire:model.live.debounce.300ms="sizeTo"
+                               min="0"
+                               step="0.01">
+                    </div>
+                </div>
+                <div class="col-md-6">
                     <div class="input-group">
                         <span class="input-group-text bg-light">
                             <i class="fas fa-search text-muted"></i>
                         </span>
                         <input type="text" 
                                class="form-control form-control-sm" 
-                               placeholder="Search flats by number, type..." 
+                               placeholder="Search flats by num, type, floor, and project name, address" 
                                wire:model.live.debounce.300ms="search">
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select form-select-sm" wire:model.live="projectFilter">
-                        <option value="">All Projects</option>
-                        @foreach($projects as $project)
-                            <option value="{{ $project->id }}">{{ $project->project_name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="flatTypeFilter">
-                        <option value="">All Types</option>
-                        @foreach($flatTypes as $type)
-                            <option value="{{ $type }}">{{ $type }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="perPage">
-                        <option value="10">10 per page</option>
-                        <option value="25">25 per page</option>
-                        <option value="50">50 per page</option>
-                        <option value="100">100 per page</option>
-                    </select>
-                </div>
-                <div class="col-md-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary w-100" wire:click="$refresh">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
                 </div>
             </div>
 
@@ -185,8 +207,13 @@
                                 <span class="badge bg-primary">{{ $flat->flat_number }}</span>
                             </td>
                             <td>
-                                <div class="fw-bold">{{ $flat->project->project_name }}</div>
-                                <small class="text-muted">{{ Str::limit($flat->project->address, 30) }}</small>
+                                @if($flat->project)
+                                    <div class="fw-bold">{{ $flat->project->project_name }}</div>
+                                    <small class="text-muted">{{ Str::limit($flat->project->address, 30) }}</small>
+                                @else
+                                    <div class="fw-bold text-muted">N/A</div>
+                                    <small class="text-muted">No project assigned</small>
+                                @endif
                             </td>
                             <td>
                                 <span class="badge bg-info">{{ $flat->flat_type }}</span>
@@ -200,22 +227,37 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('admin.project-flat.show', $flat->id) }}" 
-                                       class="btn btn-outline-info" 
-                                       title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('admin.project-flat.edit', $flat->id) }}" 
-                                       class="btn btn-outline-primary" 
-                                       title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" 
-                                            class="btn btn-outline-danger" 
-                                            title="Delete"
-                                            onclick="confirmDelete({{ $flat->id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    @if($showArchived)
+                                        <button type="button" 
+                                                class="btn btn-outline-success" 
+                                                title="Restore"
+                                                wire:click="restoreFlat({{ $flat->id }})">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger" 
+                                                title="Permanently Delete"
+                                                onclick="confirmPermanentDelete({{ $flat->id }})">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    @else
+                                        <a href="{{ route('admin.project-flat.show', $flat->id) }}" 
+                                           class="btn btn-outline-info" 
+                                           title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('admin.project-flat.edit', $flat->id) }}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger" 
+                                                title="Delete"
+                                                onclick="confirmDelete({{ $flat->id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -267,12 +309,40 @@
         </div>
     </div>
 
+    <!-- Permanent Delete Confirmation Modal -->
+    <div class="modal fade" id="permanentDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Permanent Delete
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0"><strong>Warning!</strong> This action will permanently delete this flat and cannot be undone. Are you absolutely sure?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmPermanentDeleteBtn">Permanently Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let flatIdToDelete = null;
+        let flatIdToPermanentDelete = null;
 
         function confirmDelete(flatId) {
             flatIdToDelete = flatId;
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        function confirmPermanentDelete(flatId) {
+            flatIdToPermanentDelete = flatId;
+            const modal = new bootstrap.Modal(document.getElementById('permanentDeleteModal'));
             modal.show();
         }
 
@@ -282,6 +352,15 @@
                 const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
                 modal.hide();
                 flatIdToDelete = null;
+            }
+        });
+
+        document.getElementById('confirmPermanentDeleteBtn').addEventListener('click', function() {
+            if (flatIdToPermanentDelete) {
+                @this.permanentDeleteFlat(flatIdToPermanentDelete);
+                const modal = bootstrap.Modal.getInstance(document.getElementById('permanentDeleteModal'));
+                modal.hide();
+                flatIdToPermanentDelete = null;
             }
         });
     </script>

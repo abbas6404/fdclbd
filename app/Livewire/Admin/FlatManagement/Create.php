@@ -24,13 +24,17 @@ class Create extends Component
     
     // List of flats to add
     public $flats_to_add = [];
+    
+    // Show flat type info modal
+    public $showFlatTypeInfo = false;
 
     protected $rules = [
         'selected_project_id' => 'required|exists:projects,id',
         'flats_to_add.*.flat_number' => 'required|string|max:255',
         'flats_to_add.*.flat_type' => 'required|string|max:255',
         'flats_to_add.*.floor_number' => 'required|string|max:255',
-        'flats_to_add.*.flat_size' => 'required|string|max:255',
+        'flats_to_add.*.flat_size' => 'required|numeric|min:0',
+        'flats_to_add.*.status' => 'required|in:available,sold,reserved,land_owner',
     ];
 
     protected $messages = [
@@ -60,7 +64,7 @@ class Create extends Component
 
     public function loadRecentProjects()
     {
-        $this->project_results = Project::select('id', 'project_name', 'description', 'address', 'facing', 'status')
+        $this->project_results = Project::select('id', 'project_name', 'description', 'address', 'facing', 'status', 'land_owner_name')
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
@@ -74,7 +78,7 @@ class Create extends Component
             return;
         }
 
-        $this->project_results = Project::select('id', 'project_name', 'description', 'address', 'facing', 'status')
+        $this->project_results = Project::select('id', 'project_name', 'description', 'address', 'facing', 'status', 'land_owner_name')
             ->where('project_name', 'like', "%{$this->project_search}%")
             ->orWhere('address', 'like', "%{$this->project_search}%")
             ->orderBy('created_at', 'desc')
@@ -92,6 +96,8 @@ class Create extends Component
                 'id' => $project->id,
                 'project_name' => $project->project_name,
                 'address' => $project->address,
+                'land_owner_name' => $project->land_owner_name,
+                'facing' => $project->facing,
                 'status' => $project->status,
             ];
             $this->project_search = $project->project_name;
@@ -125,6 +131,7 @@ class Create extends Component
             'flat_type' => '',
             'floor_number' => '',
             'flat_size' => '',
+            'status' => 'available',
         ];
     }
 
@@ -164,7 +171,8 @@ class Create extends Component
             'flats_to_add.*.flat_number' => 'required|string|max:255',
             'flats_to_add.*.flat_type' => 'required|string|max:255',
             'flats_to_add.*.floor_number' => 'required|string|max:255',
-            'flats_to_add.*.flat_size' => 'required|string|max:255',
+            'flats_to_add.*.flat_size' => 'required|numeric|min:0',
+            'flats_to_add.*.status' => 'required|in:available,sold,reserved,land_owner',
         ]);
 
         // Check for duplicate flat numbers
@@ -187,7 +195,7 @@ class Create extends Component
                     'flat_type' => $flatData['flat_type'],
                     'floor_number' => $flatData['floor_number'],
                     'flat_size' => $flatData['flat_size'],
-                    'status' => 'available',
+                    'status' => $flatData['status'] ?? 'available',
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id(),
                 ]);
