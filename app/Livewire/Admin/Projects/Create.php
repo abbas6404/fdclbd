@@ -93,8 +93,9 @@ class Create extends Component
                         
                         // Check if file is a Livewire temporary file or already stored
                         if (is_object($file) && method_exists($file, 'getClientOriginalName')) {
-                            $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                            $filePath = $file->storeAs('attachments/projects', $fileName, 'public');
+                            $extension = $file->getClientOriginalExtension();
+                            $fileName = time() . '_' . uniqid() . '.' . $extension;
+                            $filePath = $file->storeAs('document_soft_copy/project', $fileName, 'public');
                             
                             Attachment::create([
                                 'document_name' => $attachment['document_name'] ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),

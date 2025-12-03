@@ -239,45 +239,97 @@
                         <h6 class="text-primary mb-3 border-bottom pb-2">
                             <i class="fas fa-paperclip me-2"></i>Document Soft Copy
                         </h6>
-                        <div class="row g-3">
-                            @foreach($project->attachments as $attachment)
-                            <div class="col-md-4">
-                                <div class="card border">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex align-items-start">
-                                            <div class="flex-shrink-0">
-                                                @if(in_array(strtolower(pathinfo($attachment->file_path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                                                    <i class="fas fa-image fa-2x text-primary"></i>
-                                                @else
-                                                    <i class="fas fa-file-pdf fa-2x text-danger"></i>
-                                                @endif
-                                            </div>
-                                            <div class="flex-grow-1 ms-3">
-                                                <h6 class="mb-1 small fw-bold">{{ $attachment->document_name }}</h6>
-                                                <p class="mb-1 small text-muted">
-                                                    <i class="fas fa-file me-1"></i>
-                                                    {{ basename($attachment->file_path) }}
-                                                </p>
-                                                <p class="mb-0 small text-muted">
-                                                    <i class="fas fa-hdd me-1"></i>
-                                                    {{ number_format($attachment->file_size / 1024, 2) }} KB
-                                                </p>
+                        @foreach($project->attachments as $attachment)
+                        <div class="card mb-2 border">
+                            <div class="card-body p-2">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-auto text-center" style="width: 30px;">
+                                        <span class="text-muted">{{ $loop->iteration }}.</span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="d-flex align-items-center">
+                                            @if(in_array(strtolower(pathinfo($attachment->file_path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                <i class="fas fa-image fa-lg text-primary me-2"></i>
+                                            @else
+                                                <i class="fas fa-file-pdf fa-lg text-danger me-2"></i>
+                                            @endif
+                                            <div>
+                                                <h6 class="mb-0 small fw-bold">{{ $attachment->document_name }}</h6>
                                             </div>
                                         </div>
-                                        <div class="mt-2">
-                                            <a href="{{ asset('storage/' . $attachment->file_path) }}" 
-                                               target="_blank" 
-                                               class="btn btn-sm btn-outline-primary w-100">
-                                                <i class="fas fa-download me-1"></i> View/Download
-                                            </a>
-                                        </div>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <a href="{{ route('admin.documents.show', $attachment->id) }}" 
+                                           target="_blank" 
+                                           class="btn btn-xs btn-outline-info me-1"
+                                           title="View">
+                                            <i class="fas fa-eye" style="font-size: 0.75rem;"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                            @endforeach
                         </div>
+                        @endforeach
                     </div>
                 </div>
+                @endif
+
+                <!-- Soft Deleted Attachments (Archive) -->
+                @if(!empty($deletedAttachments))
+                    <div class="row mt-4 pt-3 border-top">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="text-muted mb-0">
+                                    <i class="fas fa-archive me-2"></i>Deleted Documents (Archive)
+                                </h6>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-secondary" 
+                                        wire:click="$set('showDeleted', {{ !$showDeleted ? 'true' : 'false' }})">
+                                    <i class="fas fa-{{ $showDeleted ? 'chevron-up' : 'chevron-down' }} me-1"></i>
+                                    {{ $showDeleted ? 'Hide' : 'Show' }} ({{ count($deletedAttachments) }})
+                                </button>
+                            </div>
+                            
+                            @if($showDeleted)
+                                @foreach($deletedAttachments as $deletedAttachment)
+                                    <div class="card mb-2 border" style="opacity: 0.7; background-color: #f8f9fa;">
+                                        <div class="card-body p-2">
+                                            <div class="row g-2 align-items-center">
+                                                <div class="col-auto text-center" style="width: 30px;">
+                                                    <span class="text-muted">{{ $loop->iteration }}.</span>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="d-flex align-items-center">
+                                                        @if(in_array(strtolower(pathinfo($deletedAttachment['file_path'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                            <i class="fas fa-image fa-lg text-muted me-2"></i>
+                                                        @else
+                                                            <i class="fas fa-file-pdf fa-lg text-muted me-2"></i>
+                                                        @endif
+                                                        <div>
+                                                            <h6 class="mb-0 small fw-bold text-muted">
+                                                                <s>{{ $deletedAttachment['document_name'] }}</s>
+                                                            </h6>
+                                                            <small class="text-muted">
+                                                                Deleted: {{ \Carbon\Carbon::parse($deletedAttachment['deleted_at'])->format('M d, Y h:i A') }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 text-end">
+                                                    <a href="{{ route('admin.documents.show', $deletedAttachment['id']) }}" 
+                                                       target="_blank" 
+                                                       class="btn btn-xs btn-outline-info"
+                                                       title="View">
+                                                        <i class="fas fa-eye" style="font-size: 0.75rem;"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
                 @endif
 
                 <!-- Additional Information -->

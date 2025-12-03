@@ -247,6 +247,9 @@
                                         <div class="card mb-2 border">
                                             <div class="card-body p-2">
                                                 <div class="row g-2 align-items-end">
+                                                    <div class="col-auto text-center" style="width: 30px;">
+                                                        <span class="text-muted">{{ $loop->iteration }}.</span>
+                                                    </div>
                                                     <div class="col-md-5">
                                                         <label class="form-label small fw-bold">Document Name</label>
                                                         <input type="text" 
@@ -273,7 +276,7 @@
                                                             </small>
                                                         @endif
                                                     </div>
-                                                    <div class="col-md-2 d-flex align-items-end">
+                                                    <div class="col-md-1 d-flex align-items-end">
                                                         <button type="button" 
                                                                 class="btn btn-xs btn-outline-danger" 
                                                                 wire:click="removeAttachment({{ $index }})"

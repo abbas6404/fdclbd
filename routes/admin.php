@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AttachmentController;
 
 // Real Estate Controllers
 use App\Http\Controllers\Admin\ProjectController;
@@ -53,6 +54,12 @@ Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
 
 // Admin-Only Dashboard - accessible only to Super Admin and Admin roles
 Route::get('/admin-dashboard', [AdminController::class, 'adminDashboard'])->name('admin-dashboard');
+
+// Secure Document Routes (requires authentication)
+Route::prefix('documents')->name('documents.')->group(function () {
+    Route::get('/{id}', [AttachmentController::class, 'show'])->name('show');
+    Route::get('/{id}/download', [AttachmentController::class, 'download'])->name('download');
+});
 
 // Real Estate Management Routes
 Route::prefix('projects')->name('projects.')->group(function () {

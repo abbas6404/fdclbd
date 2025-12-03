@@ -102,23 +102,7 @@
                                     <i class="fas fa-sort text-muted"></i>
                                 @endif
                             </th>
-                            <th>Address</th>
-                            <th wire:click="sortBy('facing')" style="cursor: pointer;" class="user-select-none">
-                                Facing
-                                @if($sortField === 'facing')
-                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-primary"></i>
-                                @else
-                                    <i class="fas fa-sort text-muted"></i>
-                                @endif
-                            </th>
-                            <th wire:click="sortBy('storey')" style="cursor: pointer;" class="user-select-none">
-                                Storey
-                                @if($sortField === 'storey')
-                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-primary"></i>
-                                @else
-                                    <i class="fas fa-sort text-muted"></i>
-                                @endif
-                            </th>
+                            <th>Address/Fac/Sto/Flo</th>
                             <th wire:click="sortBy('land_area')" style="cursor: pointer;" class="user-select-none">
                                 Land Area
                                 @if($sortField === 'land_area')
@@ -160,7 +144,7 @@
                                 @endif
                             </th>
                             <th wire:click="sortBy('project_launching_date')" style="cursor: pointer;" class="user-select-none">
-                                Launch Date
+                                LaU/HaN
                                 @if($sortField === 'project_launching_date')
                                     <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-primary"></i>
                                 @else
@@ -190,16 +174,27 @@
                                 <small class="text-muted">{{ Str::limit($project->description, 50) }}</small>
                                 @endif
                             </td>
-                            <td style="cursor: pointer; color: #0066cc;" wire:click="showProjectFlats({{ $project->id }})" title="Click to view flats">{{ Str::limit($project->address, 30) }}</td>
-                            <td>
-                                @if($project->facing)
-                                    <span class="badge bg-info">{{ $project->facing }}</span>
-                                @else
-                                    <span class="text-muted">N/A</span>
-                                @endif
-                            </td>
-                            <td>
-                                {{ $project->storey ?? 'N/A' }}
+                            <td style="cursor: pointer; color: #0066cc;" wire:click="showProjectFlats({{ $project->id }})" title="Click to view flats">
+                                <div>{{ Str::limit($project->address, 30) }}</div>
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        @if($project->facing)
+                                            Fac: {{ $project->facing }}
+                                        @else
+                                            Fac: N/A
+                                        @endif
+                                        @if($project->storey)
+                                            | Sto: {{ $project->storey }}
+                                        @else
+                                            | Sto: N/A
+                                        @endif
+                                        @if($project->total_floors)
+                                            | Flo: {{ $project->total_floors }}
+                                        @else
+                                            | Flo: N/A
+                                        @endif
+                                    </small>
+                                </div>
                             </td>
                             <td>
                                 {{ $project->land_area ?? 'N/A' }}
@@ -216,7 +211,14 @@
                             <td>
                                 <span class="badge bg-secondary" style="cursor: pointer;" wire:click="showProjectFlats({{ $project->id }}, 'land_owner')" title="Click to view land owner flats">{{ $project->land_owner_flats_count ?? 0 }}</span>
                             </td>
-                            <td>{{ $project->project_launching_date ? \Carbon\Carbon::parse($project->project_launching_date)->format('M d, y') : 'N/A' }}</td>
+                            <td>
+                                <div>{{ $project->project_launching_date ? \Carbon\Carbon::parse($project->project_launching_date)->format('M d, y') : 'N/A' }}</div>
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {{ $project->project_hand_over_date ? \Carbon\Carbon::parse($project->project_hand_over_date)->format('M d, y') : 'N/A' }}
+                                    </small>
+                                </div>
+                            </td>
                             <td>
                                 <span class="badge bg-{{ $project->status == 'ongoing' ? 'success' : ($project->status == 'completed' ? 'info' : ($project->status == 'on_hold' ? 'warning' : ($project->status == 'upcoming' ? 'primary' : 'secondary'))) }}">
                                     {{ ucfirst(str_replace('_', ' ', $project->status)) }}
@@ -302,7 +304,14 @@
                             All Flats
                         @endif
                     </h5>
-                    <button type="button" class="btn-close" wire:click="closeFlatsModal" aria-label="Close"></button>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('admin.projects.show', $selectedProject->id) }}" 
+                           class="btn btn-sm btn-primary" 
+                           target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> View Full Details
+                        </a>
+                        <button type="button" class="btn-close" wire:click="closeFlatsModal" aria-label="Close"></button>
+                    </div>
                 </div>
                 <div class="modal-body">
                     <!-- Filter Buttons -->
@@ -424,9 +433,6 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" wire:click="closeFlatsModal">Close</button>
-                    <a href="{{ route('admin.projects.show', $selectedProject->id) }}" class="btn btn-primary">
-                        <i class="fas fa-external-link-alt me-1"></i>View Full Details
-                    </a>
                 </div>
             </div>
         </div>

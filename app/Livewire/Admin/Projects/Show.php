@@ -9,6 +9,8 @@ class Show extends Component
 {
     public $projectId;
     public $project;
+    public $deletedAttachments = [];
+    public $showDeleted = false;
 
     public function mount($project)
     {
@@ -30,6 +32,9 @@ class Show extends Component
             $query->orderBy('display_order');
         }])
             ->findOrFail($this->projectId);
+        
+        // Load soft deleted attachments
+        $this->deletedAttachments = $this->project->attachments()->onlyTrashed()->orderBy('deleted_at', 'desc')->get()->toArray();
     }
 
     public function render()
