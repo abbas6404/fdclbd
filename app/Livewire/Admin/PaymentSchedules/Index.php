@@ -3,13 +3,18 @@
 namespace App\Livewire\Admin\PaymentSchedules;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\FlatSale;
 use App\Models\FlatSalePaymentSchedule;
+use App\Models\Attachment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Index extends Component
 {
+    use WithFileUploads;
+
     // Search fields
     public $sale_search = '';
     public $sale_results = [];
@@ -18,6 +23,11 @@ class Index extends Component
     
     // Payment schedule items
     public $schedule_items = [];
+    
+    // Document modal
+    public $show_document_modal = false;
+    public $document_attachments = [];
+    public $existing_attachments = [];
 
     public function mount()
     {
@@ -37,8 +47,6 @@ class Index extends Component
                     'sale_number' => $sale->sale_number,
                     'customer_name' => $sale->customer->name ?? 'N/A',
                     'flat_number' => $sale->flat->flat_number ?? 'N/A',
-                    'total_price' => $sale->total_price ?? 0,
-                    'net_price' => $sale->net_price ?? 0,
                 ];
             })
             ->toArray();
@@ -77,8 +85,6 @@ class Index extends Component
                     'sale_number' => $sale->sale_number,
                     'customer_name' => $sale->customer->name ?? 'N/A',
                     'flat_number' => $sale->flat->flat_number ?? 'N/A',
-                    'total_price' => $sale->total_price ?? 0,
-                    'net_price' => $sale->net_price ?? 0,
                 ];
             })
             ->toArray();
@@ -86,18 +92,19 @@ class Index extends Component
 
     public function selectSale($saleId)
     {
-        $sale = FlatSale::with(['customer', 'flat', 'salesAgent'])->find($saleId);
+        $sale = FlatSale::with(['customer', 'flat.project', 'salesAgent'])->find($saleId);
         if ($sale) {
             $this->selected_sale_id = $sale->id;
+            $project = $sale->flat->project ?? null;
             $this->selected_sale = [
                 'id' => $sale->id,
                 'sale_number' => $sale->sale_number,
-                'customer_name' => $sale->customer->name ?? 'N/A',
-                'customer_phone' => $sale->customer->phone ?? 'N/A',
+                'project_name' => $project->project_name ?? 'N/A',
+                'project_address' => $project->address ?? 'N/A',
                 'flat_number' => $sale->flat->flat_number ?? 'N/A',
                 'flat_type' => $sale->flat->flat_type ?? 'N/A',
-                'total_price' => $sale->total_price ?? 0,
-                'net_price' => $sale->net_price ?? 0,
+                'customer_name' => $sale->customer->name ?? 'N/A',
+                'customer_phone' => $sale->customer->phone ?? 'N/A',
             ];
             $this->sale_search = $sale->sale_number;
             // Keep showing recent sales after selection
@@ -387,6 +394,181 @@ class Index extends Component
         $this->schedule_items = [];
         // Reload recent sales after clearing
         $this->loadRecentSales();
+    }
+
+    // Document modal methods
+    public function openDocumentModal()
+    {
+        if (!$this->selected_sale_id) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Please select a flat sale first.'
+            ]);
+            return;
+        }
+        
+        // Load existing attachments
+        $sale = FlatSale::with('flat')->find($this->selected_sale_id);
+        if ($sale && $sale->flat) {
+            $this->existing_attachments = Attachment::where('flat_id', $sale->flat->id)
+                ->orderBy('display_order', 'asc')
+                ->get()
+                ->map(function($attachment) {
+                    return [
+                        'id' => $attachment->id,
+                        'document_name' => $attachment->document_name,
+                        'file_path' => $attachment->file_path,
+                        'file_size' => $attachment->file_size,
+                        'is_existing' => true,
+                    ];
+                })
+                ->toArray();
+        }
+        
+        $this->show_document_modal = true;
+        $this->document_attachments = [];
+    }
+
+    public function closeDocumentModal()
+    {
+        $this->show_document_modal = false;
+        $this->document_attachments = [];
+        $this->existing_attachments = [];
+    }
+
+    public function addDocumentAttachment()
+    {
+        $this->document_attachments[] = [
+            'document_name' => '',
+            'file' => null,
+        ];
+    }
+
+    public function removeDocumentAttachment($index)
+    {
+        unset($this->document_attachments[$index]);
+        $this->document_attachments = array_values($this->document_attachments);
+    }
+
+    public function removeExistingAttachment($attachmentId)
+    {
+        try {
+            $attachment = Attachment::find($attachmentId);
+            if ($attachment) {
+                // Soft delete (model uses SoftDeletes trait)
+                // File remains in storage, only record is marked as deleted
+                $attachment->delete();
+                
+                // Remove from existing attachments array
+                $this->existing_attachments = array_filter($this->existing_attachments, function($item) use ($attachmentId) {
+                    return $item['id'] != $attachmentId;
+                });
+                $this->existing_attachments = array_values($this->existing_attachments);
+                
+                $this->dispatch('show-alert', [
+                    'type' => 'success',
+                    'message' => 'Document removed successfully!'
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error removing document: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function saveDocuments()
+    {
+        if (!$this->selected_sale_id) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Please select a flat sale first.'
+            ]);
+            return;
+        }
+
+        // Check if there are any new documents to save
+        $hasNewDocuments = false;
+        foreach ($this->document_attachments as $attachment) {
+            if (isset($attachment['file']) && $attachment['file']) {
+                $hasNewDocuments = true;
+                break;
+            }
+        }
+
+        if (!$hasNewDocuments && empty($this->document_attachments)) {
+            // No new documents to save, just close modal
+            $this->closeDocumentModal();
+            return;
+        }
+
+        try {
+            $sale = FlatSale::with('flat')->find($this->selected_sale_id);
+            if (!$sale || !$sale->flat) {
+                $this->dispatch('show-alert', [
+                    'type' => 'error',
+                    'message' => 'Flat sale or flat not found.'
+                ]);
+                return;
+            }
+
+            $flatId = $sale->flat->id;
+            $displayOrder = Attachment::where('flat_id', $flatId)->max('display_order') ?? 0;
+            $savedCount = 0;
+
+            foreach ($this->document_attachments as $attachment) {
+                if (isset($attachment['file']) && $attachment['file']) {
+                    $file = $attachment['file'];
+                    
+                    if (is_object($file) && method_exists($file, 'getClientOriginalName')) {
+                        $extension = $file->getClientOriginalExtension();
+                        $fileName = time() . '_' . uniqid() . '.' . $extension;
+                        $filePath = $file->storeAs('document_soft_copy/flat_sale', $fileName, 'public');
+                        
+                        Attachment::create([
+                            'document_name' => $attachment['document_name'] ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                            'file_path' => $filePath,
+                            'file_size' => $file->getSize(),
+                            'display_order' => ++$displayOrder,
+                            'flat_id' => $flatId,
+                        ]);
+                        $savedCount++;
+                    }
+                }
+            }
+
+            if ($savedCount > 0) {
+                $this->dispatch('show-alert', [
+                    'type' => 'success',
+                    'message' => "{$savedCount} document(s) saved successfully!"
+                ]);
+            }
+
+            // Reload existing attachments
+            $this->existing_attachments = Attachment::where('flat_id', $flatId)
+                ->orderBy('display_order', 'asc')
+                ->get()
+                ->map(function($attachment) {
+                    return [
+                        'id' => $attachment->id,
+                        'document_name' => $attachment->document_name,
+                        'file_path' => $attachment->file_path,
+                        'file_size' => $attachment->file_size,
+                        'is_existing' => true,
+                    ];
+                })
+                ->toArray();
+
+            // Clear new attachments
+            $this->document_attachments = [];
+
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error saving documents: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function render()

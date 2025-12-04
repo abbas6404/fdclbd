@@ -460,6 +460,7 @@ body {
     display: flex;
     flex-direction: column;
     transition: all var(--transition-speed);
+    min-height: 100vh;
 }
 
 /* Navbar Styles */
@@ -684,6 +685,8 @@ body {
 .main-content {
     padding: 10px 0px;
     background-color: transparent;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Breadcrumb styling */

@@ -1,10 +1,54 @@
 <div class="container-fluid">
     <div class="card shadow">
-        <div class="card-header bg-white py-1">
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0 text-primary">
-                    <i class="fas fa-calendar-alt me-2"></i> Payment Schedule
-                </h6>
+        <div class="card-header bg-white py-2">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <h6 class="card-title mb-0 text-primary">
+                        <i class="fas fa-calendar-alt me-2"></i> Payment Schedule
+                    </h6>
+                </div>
+                @if($selected_sale)
+                <div class="col">
+                    <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="fas fa-building text-primary"></i>
+                            <strong class="text-primary">{{ $selected_sale['project_name'] ?? 'N/A' }}</strong>
+                        </div>
+                        <span class="text-muted d-none d-md-inline">|</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span class="text-dark" style="font-size: 0.9rem;">{{ Str::limit($selected_sale['project_address'] ?? 'N/A', 40) }}</span>
+                        </div>
+                        <span class="text-muted d-none d-md-inline">|</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="fas fa-home text-success"></i>
+                            <span class="text-dark fw-semibold">{{ $selected_sale['flat_number'] ?? 'N/A' }}</span>
+                        </div>
+                        @if(isset($selected_sale['flat_type']) && $selected_sale['flat_type'] !== 'N/A')
+                            <span class="badge bg-secondary">{{ $selected_sale['flat_type'] }}</span>
+                        @endif
+                        <span class="text-muted d-none d-md-inline">|</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="fas fa-user text-info"></i>
+                            <span class="text-dark">{{ $selected_sale['customer_name'] ?? 'N/A' }}</span>
+                        </div>
+                        <span class="text-muted d-none d-md-inline">|</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="fas fa-phone text-success"></i>
+                            <span class="text-dark">{{ $selected_sale['customer_phone'] ?? 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                <div class="col-auto">
+                    @if($selected_sale)
+                        <button type="button" 
+                                class="btn btn-sm btn-primary" 
+                                wire:click="openDocumentModal">
+                            <i class="fas fa-paperclip me-1"></i> Add Document
+                        </button>
+                    @endif
+                </div>
             </div>
         </div>
         <div class="card-body py-3">
@@ -200,7 +244,7 @@
                                                     {{ $result['flat_number'] ?? 'N/A' }}
                                                 </td>
                                                 <td class="small text-nowrap">
-                                                    {{ number_format($result['net_price'] ?? 0, 2) }}
+                                                    -
                                                 </td>
                                             </tr>
                                             @endforeach
@@ -306,5 +350,132 @@
             });
         });
     </script>
+
+    <!-- Document Modal -->
+    @if($show_document_modal)
+    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-paperclip me-2"></i> Add Document
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" wire:click="closeDocumentModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label mb-0 fw-bold text-primary">
+                            <i class="fas fa-paperclip me-1"></i> Document Soft Copy
+                        </label>
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-primary" 
+                                wire:click="addDocumentAttachment">
+                            <i class="fas fa-plus me-1"></i> Add File
+                        </button>
+                    </div>
+                    
+                    @if(!empty($existing_attachments) || !empty($document_attachments))
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;" class="text-center">#</th>
+                                    <th>Document Name</th>
+                                    <th>File</th>
+                                    <th style="width: 100px;" class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Existing Documents -->
+                                @foreach($existing_attachments as $attachment)
+                                <tr class="table-info">
+                                    <td class="text-center">
+                                        <span class="text-muted">{{ $loop->iteration }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ $attachment['document_name'] }}</strong>
+                                        <small class="text-muted d-block">(Existing)</small>
+                                    </td>
+                                    <td>
+                                        <a href="{{ asset('storage/' . $attachment['file_path']) }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download me-1"></i> View/Download
+                                        </a>
+                                        <small class="text-muted d-block mt-1">
+                                            {{ number_format($attachment['file_size'] / 1024, 2) }} KB
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" 
+                                                class="btn btn-xs btn-outline-danger" 
+                                                wire:click="removeExistingAttachment({{ $attachment['id'] }})"
+                                                wire:confirm="Are you sure you want to delete this document?"
+                                                title="Delete">
+                                            <i class="fas fa-trash" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                                
+                                <!-- New Documents -->
+                                @foreach($document_attachments as $index => $attachment)
+                                <tr>
+                                    <td class="text-center">
+                                        <span class="text-muted">{{ count($existing_attachments) + $loop->iteration }}</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" 
+                                               class="form-control form-control-sm" 
+                                               wire:model.blur="document_attachments.{{ $index }}.document_name" 
+                                               placeholder="Enter document name">
+                                    </td>
+                                    <td>
+                                        <input type="file" 
+                                               class="form-control form-control-sm" 
+                                               accept="image/*,.pdf,.doc,.docx"
+                                               wire:model="document_attachments.{{ $index }}.file">
+                                        @if(isset($attachment['file']) && $attachment['file'])
+                                            <small class="text-success d-block mt-1">
+                                                <i class="fas fa-file me-1"></i>
+                                                {{ is_string($attachment['file']) ? $attachment['file'] : $attachment['file']->getClientOriginalName() }}
+                                            </small>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" 
+                                                class="btn btn-xs btn-outline-danger" 
+                                                wire:click="removeDocumentAttachment({{ $index }})"
+                                                title="Remove">
+                                            <i class="fas fa-trash" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-file fa-2x mb-2"></i>
+                        <p class="mb-0">Click "Add File" button to add a new document</p>
+                    </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="closeDocumentModal">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" wire:click="saveDocuments" wire:loading.attr="disabled">
+                        <i class="fas fa-save me-1"></i> 
+                        <span wire:loading.remove wire:target="saveDocuments">Save Documents</span>
+                        <span wire:loading wire:target="saveDocuments">Saving...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    @endif
 </div>
 

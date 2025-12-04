@@ -524,22 +524,6 @@ class Index extends Component
                     continue; // Skip already sold flats
                 }
 
-                // Calculate pricing (you may need to adjust this based on your pricing logic)
-                // For now, using flat_size * a default price_per_sqft
-                // You can add pricing fields to the form later
-                $pricePerSqft = 0; // Default or get from flat pricing if available
-                
-                // Extract numeric value from flat_size string (e.g., "500sqft" -> 500)
-                $flatSizeNumeric = 0;
-                if ($flat->flat_size) {
-                    // Extract numbers from the string
-                    preg_match('/[\d.]+/', $flat->flat_size, $matches);
-                    $flatSizeNumeric = isset($matches[0]) ? (float) $matches[0] : 0;
-                }
-                
-                $totalPrice = $flatSizeNumeric * $pricePerSqft;
-                $netPrice = $totalPrice; // Can add charges later
-
                 // Generate sale number
                 $saleNumber = FlatSale::generateSaleNumber();
 
@@ -549,15 +533,6 @@ class Index extends Component
                     'customer_id' => $customer->id,
                     'flat_id' => $flat->id,
                     'sales_agent_id' => $this->seller_id ?: null,
-                    'price_per_sqft' => $pricePerSqft,
-                    'total_price' => $totalPrice,
-                    'parking_charge' => 0,
-                    'utility_charge' => 0,
-                    'additional_work_charge' => 0,
-                    'other_charge' => null,
-                    'deduction_amount' => null,
-                    'refund_amount' => null,
-                    'net_price' => $netPrice,
                     'sale_date' => now()->toDateString(),
                     'nominee_name' => $this->nominee_name ?: null,
                     'nominee_nid' => $this->nominee_nid ?: null,

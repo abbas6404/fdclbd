@@ -16,14 +16,6 @@ class FlatSale extends Model
         'customer_id',
         'flat_id',
         'sales_agent_id',
-        'price_per_sqft',
-        'total_price',
-        'parking_charge',
-        'utility_charge',
-        'additional_work_charge',
-        'other_charge',
-        'deduction_amount',
-        'refund_amount',
         'sale_date',
         'nominee_name',
         'nominee_nid',
@@ -34,14 +26,6 @@ class FlatSale extends Model
     ];
 
     protected $casts = [
-        'price_per_sqft' => 'decimal:2',
-        'total_price' => 'decimal:2',
-        'parking_charge' => 'decimal:2',
-        'utility_charge' => 'decimal:2',
-        'additional_work_charge' => 'decimal:2',
-        'other_charge' => 'decimal:2',
-        'deduction_amount' => 'decimal:2',
-        'refund_amount' => 'decimal:2',
         'sale_date' => 'date',
     ];
 
