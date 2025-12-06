@@ -44,16 +44,20 @@ class Index extends Component
 
     public function loadRecentSales()
     {
-        $this->sale_results = FlatSale::with(['customer', 'flat', 'salesAgent'])
+        $this->sale_results = FlatSale::with(['customer', 'flat.project', 'salesAgent'])
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
             ->map(function($sale) {
+                $project = $sale->flat->project ?? null;
                 return [
                     'id' => $sale->id,
                     'sale_number' => $sale->sale_number,
-                    'customer_name' => $sale->customer->name ?? 'N/A',
+                    'project_name' => $project->project_name ?? 'N/A',
                     'flat_number' => $sale->flat->flat_number ?? 'N/A',
+                    'customer_name' => $sale->customer->name ?? 'N/A',
+                    'customer_phone' => $sale->customer->phone ?? 'N/A',
+                    'customer_nid' => $sale->customer->nid_or_passport_number ?? 'N/A',
                 ];
             })
             ->toArray();
@@ -67,7 +71,7 @@ class Index extends Component
             return;
         }
 
-        $this->sale_results = FlatSale::with(['customer', 'flat', 'salesAgent'])
+        $this->sale_results = FlatSale::with(['customer', 'flat.project', 'salesAgent'])
             ->where(function($query) {
                 $query->where('sale_number', 'like', "%{$this->sale_search}%")
                       ->orWhereHas('customer', function($q) {
@@ -75,18 +79,25 @@ class Index extends Component
                             ->orWhere('phone', 'like', "%{$this->sale_search}%");
                       })
                       ->orWhereHas('flat', function($q) {
-                          $q->where('flat_number', 'like', "%{$this->sale_search}%");
+                          $q->where('flat_number', 'like', "%{$this->sale_search}%")
+                            ->orWhereHas('project', function($projectQuery) {
+                                $projectQuery->where('project_name', 'like', "%{$this->sale_search}%");
+                            });
                       });
             })
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
             ->map(function($sale) {
+                $project = $sale->flat->project ?? null;
                 return [
                     'id' => $sale->id,
                     'sale_number' => $sale->sale_number,
-                    'customer_name' => $sale->customer->name ?? 'N/A',
+                    'project_name' => $project->project_name ?? 'N/A',
                     'flat_number' => $sale->flat->flat_number ?? 'N/A',
+                    'customer_name' => $sale->customer->name ?? 'N/A',
+                    'customer_phone' => $sale->customer->phone ?? 'N/A',
+                    'customer_nid' => $sale->customer->nid_or_passport_number ?? 'N/A',
                 ];
             })
             ->toArray();

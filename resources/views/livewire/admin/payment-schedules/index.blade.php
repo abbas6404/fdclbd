@@ -1,6 +1,6 @@
 <div class="container-fluid">
     <div class="card shadow">
-        <div class="card-header bg-white py-2">
+        <div class="card-header bg-white py-1">
             <div class="row align-items-center">
                 <div class="col-auto">
                     <h6 class="card-title mb-0 text-primary">
@@ -9,46 +9,97 @@
                 </div>
                 @if($selected_sale)
                 <div class="col">
-                    <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
-                        <div class="d-flex align-items-center gap-1">
-                            <i class="fas fa-building text-primary"></i>
-                            <strong class="text-primary">{{ $selected_sale['project_name'] ?? 'N/A' }}</strong>
-                        </div>
-                        <span class="text-muted d-none d-md-inline">|</span>
-                        <div class="d-flex align-items-center gap-1">
-                            <i class="fas fa-map-marker-alt text-danger"></i>
-                            <span class="text-dark" style="font-size: 0.9rem;">{{ Str::limit($selected_sale['project_address'] ?? 'N/A', 40) }}</span>
-                        </div>
-                        <span class="text-muted d-none d-md-inline">|</span>
-                        <div class="d-flex align-items-center gap-1">
-                            <i class="fas fa-home text-success"></i>
-                            <span class="text-dark fw-semibold">{{ $selected_sale['flat_number'] ?? 'N/A' }}</span>
-                        </div>
+                    <div class="d-flex align-items-center justify-content-center gap-2 gap-md-3 flex-wrap">
+                        @php
+                            $items = [];
+                            if (!empty($selected_sale['project_name']) && ($selected_sale['project_name'] ?? '') !== 'N/A') {
+                                $items[] = 'project';
+                            }
+                            if (!empty($selected_sale['project_address']) && ($selected_sale['project_address'] ?? '') !== 'N/A') {
+                                $items[] = 'address';
+                            }
+                            if (!empty($selected_sale['flat_number']) && ($selected_sale['flat_number'] ?? '') !== 'N/A') {
+                                $items[] = 'flat';
+                            }
+                            if (!empty($selected_sale['customer_name']) && ($selected_sale['customer_name'] ?? '') !== 'N/A') {
+                                $items[] = 'customer';
+                            }
+                            if (!empty($selected_sale['customer_phone']) && ($selected_sale['customer_phone'] ?? '') !== 'N/A') {
+                                $items[] = 'phone';
+                            }
+                        @endphp
+                        
+                        @if(in_array('project', $items))
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-building text-primary"></i>
+                                <strong class="text-primary">{{ $selected_sale['project_name'] }}</strong>
+                            </div>
+                        @endif
+                        
+                        @if(in_array('address', $items))
+                            @if(in_array('project', $items))
+                                <span class="text-muted d-none d-md-inline">|</span>
+                            @endif
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <span class="text-dark" style="font-size: 0.9rem;">{{ Str::limit($selected_sale['project_address'], 40) }}</span>
+                            </div>
+                        @endif
+                        
+                        @if(in_array('flat', $items))
+                            @if(in_array('project', $items) || in_array('address', $items))
+                                <span class="text-muted d-none d-md-inline">|</span>
+                            @endif
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-home text-success"></i>
+                                <span class="text-dark fw-semibold">{{ $selected_sale['flat_number'] }}</span>
+                            </div>
+                        @endif
+                        
                         @if(isset($selected_sale['flat_type']) && $selected_sale['flat_type'] !== 'N/A')
                             <span class="badge bg-secondary">{{ $selected_sale['flat_type'] }}</span>
                         @endif
-                        <span class="text-muted d-none d-md-inline">|</span>
-                        <div class="d-flex align-items-center gap-1">
-                            <i class="fas fa-user text-info"></i>
-                            <span class="text-dark">{{ $selected_sale['customer_name'] ?? 'N/A' }}</span>
-                        </div>
-                        <span class="text-muted d-none d-md-inline">|</span>
-                        <div class="d-flex align-items-center gap-1">
-                            <i class="fas fa-phone text-success"></i>
-                            <span class="text-dark">{{ $selected_sale['customer_phone'] ?? 'N/A' }}</span>
-                        </div>
+                        
+                        @if(in_array('customer', $items))
+                            @if(!empty(array_intersect(['project', 'address', 'flat'], $items)))
+                                <span class="text-muted d-none d-md-inline">|</span>
+                            @endif
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-user text-info"></i>
+                                <span class="text-dark">{{ $selected_sale['customer_name'] }}</span>
+                            </div>
+                        @endif
+                        
+                        @if(in_array('phone', $items))
+                            @if(!empty(array_intersect(['project', 'address', 'flat', 'customer'], $items)))
+                                <span class="text-muted d-none d-md-inline">|</span>
+                            @endif
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-phone text-success"></i>
+                                <span class="text-dark">{{ $selected_sale['customer_phone'] }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 @endif
+                @if($selected_sale)
                 <div class="col-auto">
-                    @if($selected_sale)
-                        <button type="button" 
-                                class="btn btn-sm btn-primary" 
-                                wire:click="openDocumentModal">
-                            <i class="fas fa-paperclip me-1"></i> Add Document
-                        </button>
-                    @endif
+                    <button type="button" 
+                            class="btn btn-sm btn-primary" 
+                            wire:click="openDocumentModal">
+                        <i class="fas fa-paperclip me-1"></i> Add Document
+                    </button>
                 </div>
+                @else
+                <div class="col-md-6 ms-auto">
+                    <input type="text" 
+                           id="sale-search" 
+                           class="form-control form-control-sm" 
+                           wire:model.live.debounce.300ms="sale_search" 
+                           placeholder="Search by sale number, customer, or flat..." 
+                           autocomplete="new-password">
+                </div>
+                @endif
             </div>
         </div>
         <div class="card-body py-3">
@@ -57,31 +108,6 @@
                 <div class="col-12 px-0">
                     <!-- Payment Schedule Terms Card -->
                     <div class="card border">
-                        <div class="card-header bg-light py-2">
-                            <div class="d-flex justify-content-between align-items-center gap-2">
-                                <div class="flex-grow-1">
-                                    @if($selected_sale)
-                                        <div class="d-flex align-items-center gap-2 p-1 bg-info bg-opacity-10 rounded">
-                                            <i class="fas fa-user text-primary"></i>
-                                            <strong class="text-primary">{{ $selected_sale['customer_name'] }}</strong>
-                                            <small class="text-muted">- {{ $selected_sale['customer_phone'] }}</small>
-                                            <small class="text-muted">- {{ $selected_sale['flat_number'] }}</small>
-                                            <button type="button" class="btn btn-sm btn-outline-danger p-1 ms-auto" wire:click="clearSale" title="Clear Sale">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    @else
-                                        <input type="text" 
-                                               id="sale-search" 
-                                               class="form-control form-control-sm" 
-                                               wire:model.live.debounce.300ms="sale_search" 
-                                               placeholder="Search by sale number, customer, or flat..." 
-                                               autocomplete="new-password">
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="card-body p-0">
                             @if($selected_sale)
                             <!-- Schedule Items Table -->
@@ -192,30 +218,40 @@
                                 <table class="table table-hover table-sm align-middle">
                                     <thead class="table-light">
                                         <tr>
+                                            <th>Sr No</th>
                                             <th>Sale Number</th>
-                                            <th>Customer</th>
-                                            <th>Flat</th>
-                                            <th class="text-center">Action</th>
+                                            <th>Project Name</th>
+                                            <th>Flat Number</th>
+                                            <th>Customer Name</th>
+                                            <th>Customer Phone</th>
+                                            <th>Customer NID</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($sale_results as $result)
-                                        <tr style="cursor: pointer;">
+                                        <tr style="cursor: pointer;" 
+                                            wire:click="selectSale({{ $result['id'] }})"
+                                            class="search-item">
+                                            <td>
+                                                <span class="text-muted">{{ $loop->iteration }}</span>
+                                            </td>
                                             <td>
                                                 <span class="badge bg-info">{{ $result['sale_number'] ?? 'N/A' }}</span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ $result['project_name'] ?? 'N/A' }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">{{ $result['flat_number'] ?? 'N/A' }}</span>
                                             </td>
                                             <td>
                                                 <strong>{{ $result['customer_name'] ?? 'N/A' }}</strong>
                                             </td>
                                             <td>
-                                                <span class="badge bg-secondary">{{ $result['flat_number'] ?? 'N/A' }}</span>
+                                                <span class="text-muted">{{ $result['customer_phone'] ?? 'N/A' }}</span>
                                             </td>
-                                            <td class="text-center">
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-primary" 
-                                                        wire:click="selectSale({{ $result['id'] }})">
-                                                    <i class="fas fa-check me-1"></i> Select
-                                                </button>
+                                            <td>
+                                                <span class="text-muted small">{{ $result['customer_nid'] ?? 'N/A' }}</span>
                                             </td>
                                         </tr>
                                         @endforeach
@@ -450,4 +486,5 @@
     <div class="modal-backdrop fade show"></div>
     @endif
 </div>
+
 

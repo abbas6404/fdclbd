@@ -1,5 +1,6 @@
 <div class="container-fluid">
     <!-- Top Header -->
+    @if($view_mode === 'list')
     <div class="card shadow mb-3">
         <div class="card-header bg-white py-1">
             <div class="row align-items-center">
@@ -8,7 +9,6 @@
                         <i class="fas fa-money-bill-wave me-2"></i> Payment Receive
                     </h6>
                 </div>
-                @if($view_mode === 'list')
                 <div class="col-md-6 ms-auto">
                     <input type="text" 
                            class="form-control form-control-sm" 
@@ -16,18 +16,8 @@
                            placeholder="Search by customer, flat, project, or sale number..." 
                            autocomplete="new-password">
                 </div>
-                @else
-                <div class="col-auto ms-auto">
-                    <button type="button" 
-                            class="btn btn-sm btn-outline-secondary" 
-                            wire:click="backToList">
-                        <i class="fas fa-arrow-left me-1"></i> Back to List
-                    </button>
-                </div>
-                @endif
             </div>
         </div>
-        @if($view_mode === 'list')
         <!-- Pending Payments Table in Card Body -->
         <div class="card-body py-3">
             <div class="table-responsive">
@@ -41,7 +31,6 @@
                             <th>Pending Terms</th>
                             <th>Total Remaining</th>
                             <th>Earliest Due Date</th>
-                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,7 +39,9 @@
                             $dueDate = $item['earliest_due_date'] ? \Carbon\Carbon::parse($item['earliest_due_date']) : null;
                             $isOverdue = $dueDate && $dueDate->isPast();
                         @endphp
-                        <tr class="{{ $isOverdue ? 'table-danger' : '' }}" style="cursor: pointer;">
+                        <tr class="{{ $isOverdue ? 'table-danger' : '' }} search-item" 
+                            style="cursor: pointer;"
+                            wire:click="selectCustomerFromList({{ $item['customer_id'] }})">
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fas fa-user text-primary"></i>
@@ -93,13 +84,6 @@
                                     N/A
                                 @endif
                             </td>
-                            <td class="text-center">
-                                <button type="button" 
-                                        class="btn btn-sm btn-primary" 
-                                        wire:click="selectCustomerFromList({{ $item['customer_id'] }})">
-                                    <i class="fas fa-eye me-1"></i> View
-                                </button>
-                            </td>
                         </tr>
                         @empty
                         <tr>
@@ -115,8 +99,8 @@
                 </table>
             </div>
         </div>
-        @endif
     </div>
+    @endif
 
     @if($view_mode === 'detail')
         <!-- Detail View -->
@@ -161,108 +145,22 @@
                         </div>
                     </div>
                     @endif
+                    <div class="col-auto">
+                        <button type="button" 
+                                class="btn btn-sm btn-primary" 
+                                wire:click="toggleShowAllSchedules"
+                                title="{{ $show_all_schedules ? 'Show Only Pending' : 'Show All Schedules' }}">
+                            <i class="fas fa-eye me-1"></i> View
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="card-body py-3">
             <div class="row">
                 <!-- Left Column -->
-                <div class="{{ $selected_customer ? 'col-md-7' : 'col-md-12' }} px-0">
+                <div class="col-12 px-0">
                     <!-- Pending Payment Schedules Card -->
                     <div class="card border" style="overflow: visible;">
-                        <div class="card-header bg-light py-2" style="overflow: visible;">
-                            <div class="d-flex justify-content-between align-items-center gap-2">
-                                <div class="d-flex align-items-center gap-2" style="width: 50%;">
-                                    <h6 class="mb-0">
-                                        @if($selected_customer)
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-primary" 
-                                                wire:click="toggleShowAllSchedules"
-                                                title="{{ $show_all_schedules ? 'Show Only Pending' : 'Show All Schedules' }}">
-                                            <i class="fas fa-{{ $show_all_schedules ? 'eye-slash' : 'eye' }} me-1"></i>
-                                            {{ $show_all_schedules ? '' : '' }}
-                                        </button>
-                                        @endif
-
-                                        @if($show_all_schedules)
-                                            All Schedules
-                                        @else
-                                            Pending Schedules
-                                        @endif
-                                    </h6>
-                                </div>
-                                
-                                <!-- Customer Search/Selection in Header - 50% width -->
-                                <div class="flex-grow-1" style="width: 50%;">
-                                    @if($selected_customer)
-                                        <div class="d-flex align-items-center gap-2 p-1 bg-info bg-opacity-10 rounded">
-                                            <i class="fas fa-user text-primary"></i>
-                                            <strong class="text-primary">{{ $selected_customer['name'] }}</strong>
-                                            <small class="text-muted">- {{ $selected_customer['phone'] }}</small>
-                                            <small class="text-muted">- {{ $selected_customer['flat_number'] ?? 'N/A' }}</small>
-                                            <button type="button" class="btn btn-sm btn-outline-danger p-1 ms-auto" wire:click="clearCustomer" title="Clear Customer">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    @else
-                                        <div class="position-relative">
-                                            <input type="text" 
-                                                   id="customer-search" 
-                                                   class="form-control form-control-sm" 
-                                                   wire:model.live.debounce.300ms="customer_search" 
-                                                   wire:click="openCustomerSearch"
-                                                   wire:focus="openCustomerSearch"
-                                                   onblur="setTimeout(() => @this.set('show_customer_modal', false), 200)"
-                                                   placeholder="Search by name, phone, or email..." 
-                                                   autocomplete="new-password">
-                                            
-                                            <!-- Search Results Dropdown -->
-                                            @if($show_customer_modal && !$selected_customer)
-                                            <div class="position-absolute w-100 bg-white border rounded shadow-lg mt-1" style="z-index: 1050; max-height: 400px; overflow-y: auto; top: 100%;">
-                                                @if(count($search_results) > 0)
-                                                    <table class="table table-sm table-hover mb-0">
-                                                        <thead class="table-light sticky-top">
-                                                            <tr>
-                                                                <th class="small">Name</th>
-                                                                <th class="small">Phone</th>
-                                                                <th class="small">Email</th>
-                                                                <th class="small">NID</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @foreach($search_results as $result)
-                                                            <tr class="search-item" 
-                                                                wire:click="selectCustomer({{ $result['id'] }})"
-                                                                style="cursor: pointer;">
-                                                                <td class="small text-nowrap arrow-indicator" title="{{ $result['name'] ?? 'N/A' }}">
-                                                                    <span class="arrow-icon">▶</span>
-                                                                    <strong>{{ $result['name'] ?? 'N/A' }}</strong>
-                                                                </td>
-                                                                <td class="small text-nowrap">
-                                                                    {{ $result['phone'] ?? 'N/A' }}
-                                                                </td>
-                                                                <td class="small text-nowrap" title="{{ $result['email'] ?? 'N/A' }}">
-                                                                    {{ Str::limit($result['email'] ?? 'N/A', 25) }}
-                                                                </td>
-                                                                <td class="small text-nowrap" title="{{ $result['nid_or_passport_number'] ?? 'N/A' }}">
-                                                                    {{ Str::limit($result['nid_or_passport_number'] ?? 'N/A', 20) }}
-                                                                </td>
-                                                            </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
-                                                @else
-                                                    <div class="p-3 text-center text-muted">
-                                                        <i class="fas fa-search fa-2x mb-2"></i>
-                                                        <p class="mb-0">No customers found</p>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
                         <div class="card-body p-0">
                             @if($selected_customer && count($pending_schedules) > 0)
                             <div class="table-responsive">
@@ -433,12 +331,9 @@
                             @endif
                         </div>
                     </div>
-                </div>
 
-                <!-- Right Column -->
-                <div class="col-md-5">
                     <!-- Payment Summary Card -->
-                    <div class="card border">
+                    <div class="card border mt-3">
                         <div class="card-header bg-primary text-white py-1">
                             <h6 class="mb-0"><i class="fas fa-file-invoice-dollar me-1"></i> Payment Summary</h6>
                         </div>
