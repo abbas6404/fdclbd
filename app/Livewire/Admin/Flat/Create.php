@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\FlatManagement;
+namespace App\Livewire\Admin\Flat;
 
 use Livewire\Component;
 use App\Models\ProjectFlat;
@@ -15,6 +15,7 @@ class Create extends Component
     public $project_results = [];
     public $selected_project_id = '';
     public $selected_project = null;
+    public $show_project_modal = false;
     
     // Flat form fields
     public $flat_number = '';
@@ -24,6 +25,9 @@ class Create extends Component
     
     // List of flats to add
     public $flats_to_add = [];
+    
+    // Existing flats for selected project
+    public $existing_flats = [];
     
     // Show flat type info modal
     public $showFlatTypeInfo = false;
@@ -73,18 +77,38 @@ class Create extends Component
 
     public function updatedProjectSearch()
     {
-        if (strlen($this->project_search) < 2) {
-            $this->project_results = [];
-            return;
+        if (strlen($this->project_search) >= 2) {
+            // Keep modal open and show search results
+            if (!$this->show_project_modal) {
+                $this->show_project_modal = true;
+            }
+            $this->project_results = Project::select('id', 'project_name', 'description', 'address', 'facing', 'status', 'land_owner_name')
+                ->where('project_name', 'like', "%{$this->project_search}%")
+                ->orWhere('address', 'like', "%{$this->project_search}%")
+                ->orderBy('created_at', 'desc')
+                ->limit(20)
+                ->get()
+                ->toArray();
+        } else {
+            // If modal is open, show recent projects; otherwise keep modal closed
+            if ($this->show_project_modal) {
+                $this->loadRecentProjects();
+            }
         }
+    }
 
-        $this->project_results = Project::select('id', 'project_name', 'description', 'address', 'facing', 'status', 'land_owner_name')
-            ->where('project_name', 'like', "%{$this->project_search}%")
-            ->orWhere('address', 'like', "%{$this->project_search}%")
-            ->orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get()
-            ->toArray();
+    public function openProjectSearch()
+    {
+        $this->show_project_modal = true;
+        // Load recent projects if search is empty or less than 2 characters
+        if (strlen($this->project_search) < 2) {
+            $this->loadRecentProjects();
+        }
+    }
+
+    public function closeProjectSearch()
+    {
+        $this->show_project_modal = false;
     }
 
     public function selectProject($projectId)
@@ -101,8 +125,33 @@ class Create extends Component
                 'status' => $project->status,
             ];
             $this->project_search = $project->project_name;
-            // Clear results when project is selected
+            // Clear results and close modal when project is selected
             $this->project_results = [];
+            $this->show_project_modal = false;
+            // Load existing flats for this project
+            $this->loadExistingFlats();
+        }
+    }
+
+    public function loadExistingFlats()
+    {
+        if ($this->selected_project_id) {
+            $this->existing_flats = ProjectFlat::where('project_id', $this->selected_project_id)
+                ->orderBy('flat_number', 'asc')
+                ->get()
+                ->map(function($flat) {
+                    return [
+                        'id' => $flat->id,
+                        'flat_number' => $flat->flat_number,
+                        'flat_type' => $flat->flat_type,
+                        'floor_number' => $flat->floor_number,
+                        'flat_size' => $flat->flat_size,
+                        'status' => $flat->status,
+                    ];
+                })
+                ->toArray();
+        } else {
+            $this->existing_flats = [];
         }
     }
 
@@ -112,6 +161,8 @@ class Create extends Component
         $this->selected_project = null;
         $this->project_search = '';
         $this->flats_to_add = [];
+        $this->existing_flats = [];
+        $this->show_project_modal = false;
         // Reload recent projects after clearing
         $this->loadRecentProjects();
     }
@@ -208,11 +259,14 @@ class Create extends Component
                 'message' => count($this->flats_to_add) . ' flat(s) created successfully!'
             ]);
 
-            // Reset form
-            $this->resetForm();
+            // Reload existing flats to show newly added ones
+            $this->loadExistingFlats();
 
-            // Redirect to flats list
-            return $this->redirect(route('admin.project-flat.index'), navigate: true);
+            // Reset form (but keep project selected)
+            $this->flats_to_add = [];
+
+            // Don't redirect, stay on page to add more flats
+            // return $this->redirect(route('admin.flat.index'), navigate: true);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -230,13 +284,13 @@ class Create extends Component
 
     public function cancel()
     {
-        return redirect()->route('admin.project-flat.index');
+        return redirect()->route('admin.flat.index');
     }
 
     public function render()
     {
         $flatTypes = ['Studio', '1BHK', '2BHK', '3BHK', '4BHK', 'Penthouse'];
         
-        return view('livewire.admin.flat-management.create', compact('flatTypes'));
+        return view('livewire.admin.flat.create', compact('flatTypes'));
     }
 }

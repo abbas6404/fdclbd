@@ -17,14 +17,14 @@ return new class extends Migration
             $table->enum('account_type', ['income', 'expense'])-> index();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->foreign('parent_id')->references('id')->on('head_of_accounts')->onDelete('set null');
-            $table->string('account_level')->default('1');
+            $table->string('account_level')->default('1')->index();
             
             $table->unsignedBigInteger('created_by')->nullable();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('cascade');
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->boolean('show_in_requisition')->default(false); // Show in requisition dropdown
+            $table->enum('status', ['active', 'inactive'])->default('active')->index();
+            $table->boolean('show_in_requisition')->default(false)->index(); // Show in requisition dropdown
             $table->string('last_used_unit')->nullable(); // Remember last used unit for this account
             $table->unsignedBigInteger('last_rate')->nullable(); // Remember last used rate for this account (not used in requisitions)
             $table->timestamps();

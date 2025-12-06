@@ -26,7 +26,7 @@ class PaymentScheduleController extends Controller
 
         try {
             $sale = FlatSale::with(['customer', 'flat.project', 'salesAgent'])->findOrFail($saleId);
-            $schedules = FlatSalePaymentSchedule::where('flat_sale_id', $saleId)
+            $schedules = FlatSalePaymentSchedule::where('flat_id', $sale->flat_id)
                 ->orderBy('due_date', 'asc')
                 ->get();
 

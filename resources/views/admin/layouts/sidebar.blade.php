@@ -62,26 +62,26 @@
 
         <!-- Project Flat Dropdown -->
         <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin.project-flat.*') ? 'active' : '' }}" 
+            <a class="nav-link {{ request()->routeIs('admin.flat.*') ? 'active' : '' }}" 
                data-bs-toggle="collapse" 
                href="#projectFlatSubmenu" 
                role="button" 
-               aria-expanded="{{ request()->routeIs('admin.project-flat.*') ? 'true' : 'false' }}" 
+               aria-expanded="{{ request()->routeIs('admin.flat.*') ? 'true' : 'false' }}" 
                aria-controls="projectFlatSubmenu">
                 <i class="fas fa-home"></i>
                 <span>Flats</span>
                 <i class="fas fa-chevron-down ms-auto"></i>
             </a>
-            <div class="collapse {{ request()->routeIs('admin.project-flat.*') ? 'show' : '' }}" id="projectFlatSubmenu">
+            <div class="collapse {{ request()->routeIs('admin.flat.*') ? 'show' : '' }}" id="projectFlatSubmenu">
                 <ul class="nav flex-column ms-3">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.project-flat.index') ? 'active' : '' }}" href="{{ route('admin.project-flat.index') }}">
+                        <a class="nav-link {{ request()->routeIs('admin.flat.index') ? 'active' : '' }}" href="{{ route('admin.flat.index') }}">
                             <i class="fas fa-list"></i>
                             <span>Flat List</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.project-flat.create') ? 'active' : '' }}" href="{{ route('admin.project-flat.create') }}">
+                        <a class="nav-link {{ request()->routeIs('admin.flat.create') ? 'active' : '' }}" href="{{ route('admin.flat.create') }}">
                             <i class="fas fa-plus"></i>
                             <span>Add Flat</span>
                         </a>

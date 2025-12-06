@@ -1,10 +1,12 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Flat Management')
+@section('title', 'Flat Details')
 
 @section('content')
 <div class="container-fluid">
     <!-- Livewire Component -->
-    @livewire('admin.flat-management.index')
+    @livewire('admin.flat.show', ['id' => $id])
 </div>
 @endsection
+
+

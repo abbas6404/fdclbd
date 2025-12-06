@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\FlatManagement;
+namespace App\Livewire\Admin\Flat;
 
 use Livewire\Component;
 use App\Models\ProjectFlat;
@@ -18,7 +18,7 @@ class Show extends Component
 
     public function render()
     {
-        return view('livewire.admin.flat-management.show');
+        return view('livewire.admin.flat.show');
     }
 }
 

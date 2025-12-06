@@ -50,7 +50,7 @@
                 <h6 class="card-title mb-0 text-primary">
                     <i class="fas fa-edit me-2"></i> Edit Flat
                 </h6>
-                <a href="{{ route('admin.project-flat.index') }}" class="btn btn-sm btn-secondary">
+                <a href="{{ route('admin.flat.index') }}" class="btn btn-sm btn-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Back
                 </a>
             </div>
@@ -161,7 +161,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="{{ route('admin.project-flat.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('admin.flat.index') }}" class="btn btn-secondary">
                         <i class="fas fa-times me-1"></i> Cancel
                     </a>
                     <button type="submit" class="btn btn-primary">

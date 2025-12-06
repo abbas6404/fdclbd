@@ -323,6 +323,17 @@ class Index extends Component
                 return $item['id'] == $flatId;
             });
             if (!$exists) {
+                // Set the project if flat has a project
+                if ($flat->project) {
+                    $this->selected_project_id = $flat->project->id;
+                    $this->selected_project = [
+                        'id' => $flat->project->id,
+                        'project_name' => $flat->project->project_name,
+                        'address' => $flat->project->address,
+                    ];
+                    $this->project_search = $flat->project->project_name;
+                }
+                
                 $this->selected_flat_id = $flat->id;
                 $this->selected_flat = [
                     'id' => $flat->id,
@@ -331,6 +342,7 @@ class Index extends Component
                     'flat_size' => $flat->flat_size,
                     'floor_number' => $flat->floor_number,
                     'project_name' => $flat->project->project_name ?? 'N/A',
+                    'project_address' => $flat->project->address ?? 'N/A',
                 ];
                 $this->selected_flats[] = [
                     'id' => $flat->id,
@@ -339,11 +351,15 @@ class Index extends Component
                     'flat_size' => $flat->flat_size,
                     'floor_number' => $flat->floor_number,
                     'project_name' => $flat->project->project_name ?? 'N/A',
+                    'project_address' => $flat->project->address ?? 'N/A',
                     'details' => "{$flat->flat_type} - {$flat->flat_size} - Floor {$flat->floor_number} - {$flat->project->project_name}"
                 ];
+                
+                // Update flat search to show selected flat number
+                $this->flat_search = $flat->flat_number;
             }
-            $this->flat_search = '';
             $this->show_flat_dropdown = false;
+            $this->show_project_dropdown = false;
         }
     }
     
@@ -377,6 +393,20 @@ class Index extends Component
             })
             ->values()
             ->toArray();
+        
+        // Update selected_flat if it was removed or if no flats left
+        if ($this->selected_flat_id == $flatId || count($this->selected_flats) == 0) {
+            if (count($this->selected_flats) > 0) {
+                // Set to first remaining flat
+                $firstFlat = $this->selected_flats[0];
+                $this->selected_flat_id = $firstFlat['id'];
+                $this->selected_flat = $firstFlat;
+            } else {
+                // Clear if no flats left
+                $this->selected_flat_id = '';
+                $this->selected_flat = null;
+            }
+        }
     }
 
     public function selectSeller($sellerId)

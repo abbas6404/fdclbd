@@ -378,7 +378,7 @@
                         </h5>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('admin.project-flat.create') }}?project_id={{ $project->id }}" class="btn btn-primary btn-sm">
+                        <a href="{{ route('admin.flat.create') }}?project_id={{ $project->id }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> Add Flat
                         </a>
                     </div>
@@ -428,12 +428,12 @@
                                     <td>৳{{ number_format($flat->total_price ?? 0, 2) }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{{ route('admin.project-flat.show', $flat->id) }}" 
+                                            <a href="{{ route('admin.flat.show', $flat->id) }}" 
                                                class="btn btn-sm btn-outline-info" 
                                                title="View">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.project-flat.edit', $flat->id) }}" 
+                                            <a href="{{ route('admin.flat.edit', $flat->id) }}" 
                                                class="btn btn-sm btn-outline-primary" 
                                                title="Edit">
                                                 <i class="fas fa-edit"></i>
@@ -449,7 +449,7 @@
                     <div class="text-center py-5">
                         <i class="fas fa-home fa-3x text-muted mb-3"></i>
                         <p class="text-muted">No flats added to this project yet.</p>
-                        <a href="{{ route('admin.project-flat.create') }}?project_id={{ $project->id }}" class="btn btn-primary">
+                        <a href="{{ route('admin.flat.create') }}?project_id={{ $project->id }}" class="btn btn-primary">
                             <i class="fas fa-plus me-2"></i>Add First Flat
                         </a>
                     </div>

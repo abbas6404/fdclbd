@@ -1,23 +1,178 @@
 <div class="container-fluid">
-    <div class="card shadow">
+    <!-- Top Header -->
+    <div class="card shadow mb-3">
         <div class="card-header bg-white py-1">
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0 text-primary">
-                    <i class="fas fa-money-bill-wave me-2"></i> Payment Receive
-                </h6>
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <h6 class="card-title mb-0 text-primary" style="font-size: 0.95rem;">
+                        <i class="fas fa-money-bill-wave me-2"></i> Payment Receive
+                    </h6>
+                </div>
+                @if($view_mode === 'list')
+                <div class="col-md-6 ms-auto">
+                    <input type="text" 
+                           class="form-control form-control-sm" 
+                           wire:model.live.debounce.300ms="customer_search" 
+                           placeholder="Search by customer, flat, project, or sale number..." 
+                           autocomplete="new-password">
+                </div>
+                @else
+                <div class="col-auto ms-auto">
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-secondary" 
+                            wire:click="backToList">
+                        <i class="fas fa-arrow-left me-1"></i> Back to List
+                    </button>
+                </div>
+                @endif
             </div>
         </div>
+        @if($view_mode === 'list')
+        <!-- Pending Payments Table in Card Body -->
         <div class="card-body py-3">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Customer</th>
+                            <th>Sale Number</th>
+                            <th>Project</th>
+                            <th>Flat</th>
+                            <th>Pending Terms</th>
+                            <th>Total Remaining</th>
+                            <th>Earliest Due Date</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($customer_results as $item)
+                        @php
+                            $dueDate = $item['earliest_due_date'] ? \Carbon\Carbon::parse($item['earliest_due_date']) : null;
+                            $isOverdue = $dueDate && $dueDate->isPast();
+                        @endphp
+                        <tr class="{{ $isOverdue ? 'table-danger' : '' }}" style="cursor: pointer;">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-user text-primary"></i>
+                                    <div>
+                                        <strong>{{ $item['customer_name'] ?? 'N/A' }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ $item['customer_phone'] ?? 'N/A' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ $item['sale_number'] ?? 'N/A' }}</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ $item['project_name'] ?? 'N/A' }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ Str::limit($item['project_address'] ?? 'N/A', 30) }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ $item['flat_number'] ?? 'N/A' }}</span>
+                                @if($item['flat_type'] && $item['flat_type'] !== 'N/A')
+                                    <br><small class="text-muted">{{ $item['flat_type'] }}</small>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-warning">{{ $item['pending_count'] ?? 0 }}</span>
+                            </td>
+                            <td class="text-end fw-bold text-primary">
+                                ৳{{ number_format($item['total_remaining'] ?? 0, 0) }}
+                            </td>
+                            <td class="{{ $isOverdue ? 'text-danger fw-bold' : '' }}">
+                                @if($dueDate)
+                                    {{ $dueDate->format('d M Y') }}
+                                    @if($isOverdue)
+                                        <br><small class="badge bg-danger">Overdue</small>
+                                    @endif
+                                @else
+                                    N/A
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <button type="button" 
+                                        class="btn btn-sm btn-primary" 
+                                        wire:click="selectCustomerFromList({{ $item['customer_id'] }})">
+                                    <i class="fas fa-eye me-1"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-search fa-3x mb-3"></i>
+                                    <p class="mb-2">No pending payments found.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+    </div>
+
+    @if($view_mode === 'detail')
+        <!-- Detail View -->
+        <div class="card shadow">
+            <div class="card-header bg-white py-2">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <h6 class="card-title mb-0 text-primary">
+                            <i class="fas fa-file-invoice-dollar me-2"></i> Payment Details
+                        </h6>
+                    </div>
+                    @if($selected_customer)
+                    <div class="col">
+                        <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-user text-info"></i>
+                                <strong class="text-primary">{{ $selected_customer['name'] ?? 'N/A' }}</strong>
+                            </div>
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-phone text-success"></i>
+                                <span class="text-dark">{{ $selected_customer['phone'] ?? 'N/A' }}</span>
+                            </div>
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-building text-primary"></i>
+                                <strong class="text-primary">{{ $selected_customer['project_name'] ?? 'N/A' }}</strong>
+                            </div>
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <span class="text-dark" style="font-size: 0.9rem;">{{ Str::limit($selected_customer['project_address'] ?? 'N/A', 40) }}</span>
+                            </div>
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-home text-success"></i>
+                                <span class="text-dark fw-semibold">{{ $selected_customer['flat_number'] ?? 'N/A' }}</span>
+                            </div>
+                            @if(isset($selected_customer['flat_type']) && $selected_customer['flat_type'] !== 'N/A')
+                                <span class="badge bg-secondary">{{ $selected_customer['flat_type'] }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            <div class="card-body py-3">
             <div class="row">
                 <!-- Left Column -->
-                <div class="col-md-7 px-0">
+                <div class="{{ $selected_customer ? 'col-md-7' : 'col-md-12' }} px-0">
                     <!-- Pending Payment Schedules Card -->
-                    <div class="card border">
-                        <div class="card-header bg-light py-2">
+                    <div class="card border" style="overflow: visible;">
+                        <div class="card-header bg-light py-2" style="overflow: visible;">
                             <div class="d-flex justify-content-between align-items-center gap-2">
-                                <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex align-items-center gap-2" style="width: 50%;">
                                     <h6 class="mb-0">
-                                        
                                         @if($selected_customer)
                                         <button type="button" 
                                                 class="btn btn-sm btn-outline-primary" 
@@ -34,11 +189,10 @@
                                             Pending Schedules
                                         @endif
                                     </h6>
-                                  
                                 </div>
                                 
-                                <!-- Customer Search/Selection in Header -->
-                                <div class="flex-grow-1 mx-3">
+                                <!-- Customer Search/Selection in Header - 50% width -->
+                                <div class="flex-grow-1" style="width: 50%;">
                                     @if($selected_customer)
                                         <div class="d-flex align-items-center gap-2 p-1 bg-info bg-opacity-10 rounded">
                                             <i class="fas fa-user text-primary"></i>
@@ -50,13 +204,61 @@
                                             </button>
                                         </div>
                                     @else
-                                        <input type="text" 
-                                               id="customer-search" 
-                                               class="form-control form-control-sm" 
-                                       wire:model.live.debounce.300ms="customer_search" 
-                                       wire:click="showRecentCustomers"
-                                       placeholder="Search by name, phone, or email..." 
-                                       autocomplete="new-password">
+                                        <div class="position-relative">
+                                            <input type="text" 
+                                                   id="customer-search" 
+                                                   class="form-control form-control-sm" 
+                                                   wire:model.live.debounce.300ms="customer_search" 
+                                                   wire:click="openCustomerSearch"
+                                                   wire:focus="openCustomerSearch"
+                                                   onblur="setTimeout(() => @this.set('show_customer_modal', false), 200)"
+                                                   placeholder="Search by name, phone, or email..." 
+                                                   autocomplete="new-password">
+                                            
+                                            <!-- Search Results Dropdown -->
+                                            @if($show_customer_modal && !$selected_customer)
+                                            <div class="position-absolute w-100 bg-white border rounded shadow-lg mt-1" style="z-index: 1050; max-height: 400px; overflow-y: auto; top: 100%;">
+                                                @if(count($search_results) > 0)
+                                                    <table class="table table-sm table-hover mb-0">
+                                                        <thead class="table-light sticky-top">
+                                                            <tr>
+                                                                <th class="small">Name</th>
+                                                                <th class="small">Phone</th>
+                                                                <th class="small">Email</th>
+                                                                <th class="small">NID</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach($search_results as $result)
+                                                            <tr class="search-item" 
+                                                                wire:click="selectCustomer({{ $result['id'] }})"
+                                                                style="cursor: pointer;">
+                                                                <td class="small text-nowrap arrow-indicator" title="{{ $result['name'] ?? 'N/A' }}">
+                                                                    <span class="arrow-icon">▶</span>
+                                                                    <strong>{{ $result['name'] ?? 'N/A' }}</strong>
+                                                                </td>
+                                                                <td class="small text-nowrap">
+                                                                    {{ $result['phone'] ?? 'N/A' }}
+                                                                </td>
+                                                                <td class="small text-nowrap" title="{{ $result['email'] ?? 'N/A' }}">
+                                                                    {{ Str::limit($result['email'] ?? 'N/A', 25) }}
+                                                                </td>
+                                                                <td class="small text-nowrap" title="{{ $result['nid_or_passport_number'] ?? 'N/A' }}">
+                                                                    {{ Str::limit($result['nid_or_passport_number'] ?? 'N/A', 20) }}
+                                                                </td>
+                                                            </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                @else
+                                                    <div class="p-3 text-center text-muted">
+                                                        <i class="fas fa-search fa-2x mb-2"></i>
+                                                        <p class="mb-0">No customers found</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
                             </div>
@@ -235,68 +437,6 @@
 
                 <!-- Right Column -->
                 <div class="col-md-5">
-                    <!-- Search Results Area -->
-                    <div class="card border mb-3" id="search-results-container">
-                        <div class="card-header bg-primary text-white py-1">
-                            <h6 class="mb-0">
-                                <i class="fas fa-search me-1"></i> 
-                                @if($active_search_type === 'recent')
-                                    Recent Customers by Due Date ({{ count($customer_results) }})
-                                @else
-                                    Search Results
-                                @endif
-                            </h6>
-                        </div>
-                        <div class="card-body p-0" style="height: 300px; overflow-y: auto;" id="search-results-body">
-                            @if(count($customer_results) > 0)
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover mb-0">
-                                        <thead class="table-light sticky-top">
-                                            <tr>
-                                                <th class="small">Name</th>
-                                                <th class="small">Phone</th>
-                                                <th class="small">Email</th>
-                                                <th class="small">NID</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                @foreach($customer_results as $result)
-                                            <tr class="search-item" 
-                                     wire:click="selectCustomer({{ $result['id'] }})"
-                                     style="cursor: pointer;">
-                                                <td class="small text-nowrap arrow-indicator" title="{{ $result['name'] ?? 'N/A' }}">
-                                                    <span class="arrow-icon">▶</span>
-                                                    <strong>{{ $result['name'] ?? 'N/A' }}</strong>
-                                                </td>
-                                                <td class="small text-nowrap">
-                                                    {{ $result['phone'] ?? 'N/A' }}
-                                                </td>
-                                                <td class="small text-nowrap" title="{{ $result['email'] ?? 'N/A' }}">
-                                                    {{ Str::limit($result['email'] ?? 'N/A', 25) }}
-                                                </td>
-                                                <td class="small text-nowrap" title="{{ $result['nid_or_passport_number'] ?? 'N/A' }}">
-                                                    {{ Str::limit($result['nid_or_passport_number'] ?? 'N/A', 20) }}
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <div class="p-3 text-center text-muted">
-                                    <i class="fas fa-search fa-2x mb-2"></i>
-                                    <p>
-                                        @if($active_search_type === 'recent')
-                                            No customers with pending payments found
-                                        @else
-                                            Start searching to see results
-                                        @endif
-                                    </p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
                     <!-- Payment Summary Card -->
                     <div class="card border">
                         <div class="card-header bg-primary text-white py-1">
@@ -364,7 +504,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    @endif
     
     <style>
     .search-item:hover {

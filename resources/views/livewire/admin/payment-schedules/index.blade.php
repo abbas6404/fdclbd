@@ -54,43 +54,31 @@
         <div class="card-body py-3">
             <div class="row">
                 <!-- Left Column -->
-                <div class="col-md-7 px-0">
+                <div class="col-12 px-0">
                     <!-- Payment Schedule Terms Card -->
                     <div class="card border">
                         <div class="card-header bg-light py-2">
                             <div class="d-flex justify-content-between align-items-center gap-2">
-                                <div class="d-flex align-items-center gap-2 flex-grow-1">
-                                    <h6 class="mb-0"><i class="fas fa-list me-1"></i> Payment Terms ({{ count($schedule_items) }})</h6>
-                                    
-                                    <!-- Sale Search/Selection in Header -->
-                                    <div class="flex-grow-1 mx-3">
-                                        @if($selected_sale)
-                                            <div class="d-flex align-items-center gap-2 p-1 bg-info bg-opacity-10 rounded">
-                                                <i class="fas fa-user text-primary"></i>
-                                                <strong class="text-primary">{{ $selected_sale['customer_name'] }}</strong>
-                                                <small class="text-muted">- {{ $selected_sale['customer_phone'] }}</small>
-                                                <small class="text-muted">- {{ $selected_sale['flat_number'] }}</small>
-                                                <button type="button" class="btn btn-sm btn-outline-danger p-1 ms-auto" wire:click="clearSale" title="Clear Sale">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        @else
-                                            <input type="text" 
-                                                   id="sale-search" 
-                                                   class="form-control form-control-sm" 
-                                                   wire:model.live.debounce.300ms="sale_search" 
-                                                   wire:click="showRecentSales"
-                                                   placeholder="Search by sale number, customer, or flat..." 
-                                                   autocomplete="new-password">
-                                        @endif
-                                    </div>
+                                <div class="flex-grow-1">
+                                    @if($selected_sale)
+                                        <div class="d-flex align-items-center gap-2 p-1 bg-info bg-opacity-10 rounded">
+                                            <i class="fas fa-user text-primary"></i>
+                                            <strong class="text-primary">{{ $selected_sale['customer_name'] }}</strong>
+                                            <small class="text-muted">- {{ $selected_sale['customer_phone'] }}</small>
+                                            <small class="text-muted">- {{ $selected_sale['flat_number'] }}</small>
+                                            <button type="button" class="btn btn-sm btn-outline-danger p-1 ms-auto" wire:click="clearSale" title="Clear Sale">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    @else
+                                        <input type="text" 
+                                               id="sale-search" 
+                                               class="form-control form-control-sm" 
+                                               wire:model.live.debounce.300ms="sale_search" 
+                                               placeholder="Search by sale number, customer, or flat..." 
+                                               autocomplete="new-password">
+                                    @endif
                                 </div>
-                                
-                                @if($selected_sale)
-                                <button type="button" class="btn btn-sm btn-primary" wire:click="addEmptyTerm">
-                                    <i class="fas fa-plus me-1"></i> Add Term
-                                </button>
-                                @endif
                             </div>
                         </div>
 
@@ -172,19 +160,24 @@
                                     </tfoot>
                                 </table>
                             </div>
-                            <div class="mt-3 p-3 d-flex justify-content-end gap-2">
-                                <button type="button" class="btn btn-sm btn-success" wire:click="saveSchedule" 
-                                        wire:loading.attr="disabled">
-                                    <i class="fas fa-save me-1"></i> 
-                                    <span wire:loading.remove wire:target="saveSchedule">Save</span>
-                                    <span wire:loading wire:target="saveSchedule">Saving...</span>
+                            <div class="mt-3 p-3 d-flex justify-content-between align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-primary" wire:click="addEmptyTerm">
+                                    <i class="fas fa-plus me-1"></i> Add Term
                                 </button>
-                                <button type="button" class="btn btn-sm btn-primary" wire:click="saveAndPrint" 
-                                        wire:loading.attr="disabled">
-                                    <i class="fas fa-print me-1"></i> 
-                                    <span wire:loading.remove wire:target="saveAndPrint">Save & Print</span>
-                                    <span wire:loading wire:target="saveAndPrint">Saving...</span>
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-success" wire:click="saveSchedule" 
+                                            wire:loading.attr="disabled">
+                                        <i class="fas fa-save me-1"></i> 
+                                        <span wire:loading.remove wire:target="saveSchedule">Save</span>
+                                        <span wire:loading wire:target="saveSchedule">Saving...</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-primary" wire:click="saveAndPrint" 
+                                            wire:loading.attr="disabled">
+                                        <i class="fas fa-print me-1"></i> 
+                                        <span wire:loading.remove wire:target="saveAndPrint">Save & Print</span>
+                                        <span wire:loading wire:target="saveAndPrint">Saving...</span>
+                                    </button>
+                                </div>
                             </div>
                             @else
                             <div class="text-center text-muted py-4">
@@ -193,69 +186,48 @@
                             </div>
                             @endif
                             @else
+                            <!-- Show search results or empty message -->
+                            @if(count($sale_results) > 0)
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Sale Number</th>
+                                            <th>Customer</th>
+                                            <th>Flat</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($sale_results as $result)
+                                        <tr style="cursor: pointer;">
+                                            <td>
+                                                <span class="badge bg-info">{{ $result['sale_number'] ?? 'N/A' }}</span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ $result['customer_name'] ?? 'N/A' }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ $result['flat_number'] ?? 'N/A' }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-primary" 
+                                                        wire:click="selectSale({{ $result['id'] }})">
+                                                    <i class="fas fa-check me-1"></i> Select
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            @else
                             <div class="text-center text-muted py-5">
                                 <i class="fas fa-search fa-2x mb-2"></i>
                                 <p class="mb-0">Search for a flat sale to set payment schedule</p>
                             </div>
                             @endif
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column -->
-                <div class="col-md-5">
-                    <!-- Search Results Area -->
-                    <div class="card border mb-3" id="search-results-container">
-                        <div class="card-header bg-primary text-white py-1">
-                            <h6 class="mb-0">
-                                <i class="fas fa-search me-1"></i> 
-                                @if(strlen($sale_search) >= 2)
-                                    Search Results
-                                @else
-                                    Recent Flat Sales ({{ count($sale_results) }})
-                                @endif
-                            </h6>
-                        </div>
-                        <div class="card-body p-0" style="height: 400px; overflow-y: auto;" id="search-results-body">
-                            @if(count($sale_results) > 0)
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover mb-0">
-                                        <thead class="table-light sticky-top">
-                                            <tr>
-                                                <th class="small">Sale Number</th>
-                                                <th class="small">Customer</th>
-                                                <th class="small">Flat</th>
-                                                <th class="small">Net Price</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($sale_results as $result)
-                                            <tr class="search-item" 
-                                                wire:click="selectSale({{ $result['id'] }})"
-                                                style="cursor: pointer;">
-                                                <td class="small text-nowrap arrow-indicator" title="{{ $result['sale_number'] ?? 'N/A' }}">
-                                                    <span class="arrow-icon">▶</span>
-                                                    <strong>{{ $result['sale_number'] ?? 'N/A' }}</strong>
-                                                </td>
-                                                <td class="small text-nowrap" title="{{ $result['customer_name'] ?? 'N/A' }}">
-                                                    {{ Str::limit($result['customer_name'] ?? 'N/A', 25) }}
-                                                </td>
-                                                <td class="small text-nowrap">
-                                                    {{ $result['flat_number'] ?? 'N/A' }}
-                                                </td>
-                                                <td class="small text-nowrap">
-                                                    -
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <div class="p-3 text-center text-muted">
-                                    <i class="fas fa-search fa-2x mb-2"></i>
-                                    <p>No flat sales found</p>
-                                </div>
                             @endif
                         </div>
                     </div>

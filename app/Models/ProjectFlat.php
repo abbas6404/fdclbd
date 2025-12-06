@@ -33,6 +33,16 @@ class ProjectFlat extends Model
         return $this->hasMany(Attachment::class, 'flat_id');
     }
 
+    public function flatSales()
+    {
+        return $this->hasMany(FlatSale::class, 'flat_id');
+    }
+
+    public function paymentSchedules()
+    {
+        return $this->hasMany(FlatSalePaymentSchedule::class, 'flat_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

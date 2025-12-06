@@ -12,7 +12,7 @@ class FlatSalePaymentSchedule extends Model
     protected $table = 'flat_sale_payment_schedules';
 
     protected $fillable = [
-        'flat_sale_id',
+        'flat_id',
         'term_name',
         'receivable_amount',
         'received_amount',
@@ -29,9 +29,9 @@ class FlatSalePaymentSchedule extends Model
     ];
 
     // Relationships
-    public function flatSale()
+    public function flat()
     {
-        return $this->belongsTo(FlatSale::class, 'flat_sale_id');
+        return $this->belongsTo(ProjectFlat::class, 'flat_id');
     }
 
     public function invoiceItems()

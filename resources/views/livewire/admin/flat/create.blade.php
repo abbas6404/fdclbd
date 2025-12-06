@@ -76,8 +76,8 @@
         </div>
         <div class="card-body py-3">
             <div class="row">
-                <!-- Left Column -->
-                <div class="col-md-7 px-0">
+                <!-- Full Width Column -->
+                <div class="col-12">
                     <!-- Flats to Add Card -->
                     <div class="card border">
                         <div class="card-header bg-light py-2">
@@ -85,7 +85,7 @@
                                 <h6 class="mb-0"><i class="fas fa-list me-1"></i> Flats to Add ({{ count($flats_to_add) }})</h6>
                                 
                                 <!-- Project Search/Selection in Header -->
-                                <div class="flex-grow-1 mx-3">
+                                <div class="flex-grow-1 mx-3 position-relative">
                             @if($selected_project)
                                         <div class="d-flex align-items-center gap-2 p-1 bg-info bg-opacity-10 rounded">
                                             <i class="fas fa-building text-primary"></i>
@@ -99,8 +99,55 @@
                                                id="project-search" 
                                                class="form-control form-control-sm" 
                                                wire:model.live.debounce.300ms="project_search" 
+                                               wire:click="openProjectSearch"
+                                               wire:focus="openProjectSearch"
+                                               onblur="setTimeout(() => @this.set('show_project_modal', false), 200)"
                                                placeholder="Search project by name or address..." 
                                                autocomplete="new-password">
+                                        
+                                        <!-- Dropdown Search Results -->
+                                        @if($show_project_modal)
+                                        <div class="position-absolute bg-white border rounded shadow-lg mt-1" style="z-index: 1000; max-height: 400px; overflow-y: auto; width: 100%; left: 0; right: 0; top: 100%;">
+                                            @if(count($project_results) > 0)
+                                                <table class="table table-sm table-hover mb-0">
+                                                    <thead class="table-light sticky-top">
+                                                        <tr>
+                                                            <th class="small">Name</th>
+                                                            <th class="small">Description</th>
+                                                            <th class="small">Address</th>
+                                                            <th class="small">Facing</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($project_results as $result)
+                                                            <tr class="search-item" 
+                                                                wire:click="selectProject({{ $result['id'] }})"
+                                                                style="cursor: pointer;">
+                                                                <td class="small text-nowrap arrow-indicator" title="{{ $result['project_name'] ?? 'N/A' }}">
+                                                                    <span class="arrow-icon">▶</span>
+                                                                    <strong>{{ $result['project_name'] ?? 'N/A' }}</strong>
+                                                                </td>
+                                                                <td class="small text-nowrap" title="{{ $result['description'] ?? 'N/A' }}">
+                                                                    {{ Str::limit($result['description'] ?? 'N/A', 30) }}
+                                                                </td>
+                                                                <td class="small text-nowrap" title="{{ $result['address'] ?? 'N/A' }}">
+                                                                    {{ Str::limit($result['address'] ?? 'N/A', 30) }}
+                                                                </td>
+                                                                <td class="small text-nowrap">
+                                                                    {{ $result['facing'] ?? 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            @else
+                                                <div class="p-3 text-center text-muted">
+                                                    <i class="fas fa-search fa-2x mb-2"></i>
+                                                    <p class="mb-0">No projects found</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        @endif
                             @endif
                     </div>
 
@@ -211,51 +258,56 @@
                             @endif
                         </div>
                     </div>
-                </div>
 
-                <!-- Right Column -->
-                <div class="col-md-5">
-                    <!-- Search Results Area -->
-                    <div class="card border" id="search-results-container">
-                        <div class="card-header bg-primary text-white py-1">
+                    <!-- Existing Flats Card (show when project is selected) -->
+                    @if($selected_project)
+                    <div class="card border mt-3">
+                        <div class="card-header bg-light py-2">
                             <h6 class="mb-0">
-                                <i class="fas fa-search me-1"></i> 
-                                @if(strlen($project_search) >= 2)
-                                    Search Results
-                                @else
-                                    Recent Projects ({{ count($project_results) }})
-                                @endif
+                                <i class="fas fa-list-alt me-1"></i> Existing Flats ({{ count($existing_flats) }})
                             </h6>
                         </div>
-                        <div class="card-body p-0" style="height: 500px; overflow-y: auto;" id="search-results-body">
-                            @if(count($project_results) > 0)
+                        <div class="card-body p-0">
+                            @if(count($existing_flats) > 0)
                                 <div class="table-responsive">
                                     <table class="table table-sm table-hover mb-0">
-                                        <thead class="table-light sticky-top">
+                                        <thead class="table-light">
                                             <tr>
-                                                <th class="small">Name</th>
-                                                <th class="small">Description</th>
-                                                <th class="small">Address</th>
-                                                <th class="small">Facing</th>
+                                                <th>Flat Number</th>
+                                                <th>Type</th>
+                                                <th>Floor</th>
+                                                <th>Size (sq ft)</th>
+                                                <th>Status</th>
+                                                <th class="text-center">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                @foreach($project_results as $result)
-                                            <tr class="search-item" 
-                                     wire:click="selectProject({{ $result['id'] }})"
-                                     style="cursor: pointer;">
-                                                <td class="small text-nowrap arrow-indicator" title="{{ $result['project_name'] ?? 'N/A' }}">
-                                                    <span class="arrow-icon">▶</span>
-                                                    <strong>{{ $result['project_name'] ?? 'N/A' }}</strong>
+                                            @foreach($existing_flats as $flat)
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ $flat['flat_number'] }}</span>
                                                 </td>
-                                                <td class="small text-nowrap" title="{{ $result['description'] ?? 'N/A' }}">
-                                                    {{ Str::limit($result['description'] ?? 'N/A', 30) }}
+                                                <td>
+                                                    <span class="badge bg-info">{{ $flat['flat_type'] }}</span>
                                                 </td>
-                                                <td class="small text-nowrap" title="{{ $result['address'] ?? 'N/A' }}">
-                                                    {{ Str::limit($result['address'] ?? 'N/A', 30) }}
+                                                <td>{{ $flat['floor_number'] }}</td>
+                                                <td>{{ $flat['flat_size'] ?? 'N/A' }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ $flat['status'] == 'available' ? 'success' : ($flat['status'] == 'sold' ? 'danger' : ($flat['status'] == 'reserved' ? 'warning' : 'secondary')) }}">
+                                                        {{ ucfirst($flat['status']) }}
+                                                    </span>
                                                 </td>
-                                                <td class="small text-nowrap">
-                                                    {{ $result['facing'] ?? 'N/A' }}
+                                                <td class="text-center">
+                                                    <a href="{{ route('admin.flat.show', $flat['id']) }}" 
+                                                       class="btn btn-sm btn-outline-info" 
+                                                       title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.flat.edit', $flat['id']) }}" 
+                                                       class="btn btn-sm btn-outline-primary" 
+                                                       title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
                                                 </td>
                                             </tr>
                                             @endforeach
@@ -263,13 +315,14 @@
                                     </table>
                                 </div>
                             @else
-                                <div class="p-3 text-center text-muted">
-                                    <i class="fas fa-search fa-2x mb-2"></i>
-                                    <p>No projects found</p>
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-home fa-2x mb-2"></i>
+                                    <p class="mb-0">No flats added to this project yet.</p>
                                 </div>
                             @endif
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -380,4 +433,5 @@
         width: 100%;
     }
     </style>
+
 </div>

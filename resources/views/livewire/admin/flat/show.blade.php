@@ -6,10 +6,10 @@
                     <i class="fas fa-eye me-2"></i> Flat Details
                 </h6>
                 <div>
-                    <a href="{{ route('admin.project-flat.edit', $flat->id) }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('admin.flat.edit', $flat->id) }}" class="btn btn-sm btn-primary">
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
-                    <a href="{{ route('admin.project-flat.index') }}" class="btn btn-sm btn-secondary">
+                    <a href="{{ route('admin.flat.index') }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Back
                     </a>
                 </div>

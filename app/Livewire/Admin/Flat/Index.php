@@ -202,6 +202,28 @@ class Index extends Component
         }
     }
 
+    public function openPaymentReceiveModal($flatId)
+    {
+        // Find the most recent sale for this flat
+        $sale = FlatSale::where('flat_id', $flatId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
+        if ($sale && $sale->customer_id) {
+            // Redirect to payment receive page with the customer_id as query parameter
+            $this->redirect(route('admin.payment-receive.index') . '?customer_id=' . $sale->customer_id);
+        } else {
+            // No sale or customer found - show alert and redirect to flat sales page to create sale first
+            $this->dispatch('show-alert', [
+                'type' => 'info',
+                'message' => 'Please create a flat sale first before receiving payment. Redirecting to Flat Sales page...'
+            ]);
+            
+            // Redirect to flat sales page with flat_id to create sale
+            $this->redirect(route('admin.flat-sales.index') . '?flat_id=' . $flatId);
+        }
+    }
+
     public function openDocumentModal($flatId)
     {
         $this->selected_flat_id = $flatId;

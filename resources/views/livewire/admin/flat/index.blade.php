@@ -265,12 +265,15 @@
                                                 </a>
                                             </li>
                                             <li><hr class="dropdown-divider"></li>
+                                            @if($flat->status == 'available')
                                             <li>
                                                 <a class="dropdown-item" 
                                                    href="{{ route('admin.flat-sales.index') }}?flat_id={{ $flat->id }}">
                                                     <i class="fas fa-shopping-cart me-2 text-warning"></i> Flat Sales
                                                 </a>
                                             </li>
+                                            @endif
+                                            @if($flat->status == 'available' || $flat->status == 'sold')
                                             <li>
                                                 <a class="dropdown-item" 
                                                    href="javascript:void(0)" 
@@ -278,6 +281,14 @@
                                                     <i class="fas fa-calendar-alt me-2 text-info"></i> Set Schedule
                                                 </a>
                                             </li>
+                                            <li>
+                                                <a class="dropdown-item" 
+                                                   href="javascript:void(0)" 
+                                                   wire:click="openPaymentReceiveModal({{ $flat->id }})">
+                                                    <i class="fas fa-money-bill-wave me-2 text-success"></i> Payment Receive
+                                                </a>
+                                            </li>
+                                            @endif
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <a class="dropdown-item" 

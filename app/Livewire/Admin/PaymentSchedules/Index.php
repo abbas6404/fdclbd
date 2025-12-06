@@ -19,6 +19,7 @@ class Index extends Component
     public $sale_search = '';
     public $sale_results = [];
     public $selected_sale_id = '';
+    public $selected_flat_id = null; // Store flat_id from selected sale
     public $selected_sale = null;
     
     // Payment schedule items
@@ -33,6 +34,12 @@ class Index extends Component
     {
         // Load recent 20 flat sales by default
         $this->loadRecentSales();
+        
+        // Check if sale_id is passed in query string
+        if (request()->has('sale_id')) {
+            $saleId = request()->get('sale_id');
+            $this->selectSale($saleId);
+        }
     }
 
     public function loadRecentSales()
@@ -50,11 +57,6 @@ class Index extends Component
                 ];
             })
             ->toArray();
-    }
-
-    public function showRecentSales()
-    {
-        $this->loadRecentSales();
     }
 
     public function updatedSaleSearch()
@@ -95,6 +97,7 @@ class Index extends Component
         $sale = FlatSale::with(['customer', 'flat.project', 'salesAgent'])->find($saleId);
         if ($sale) {
             $this->selected_sale_id = $sale->id;
+            $this->selected_flat_id = $sale->flat_id; // Store flat_id
             $project = $sale->flat->project ?? null;
             $this->selected_sale = [
                 'id' => $sale->id,
@@ -107,8 +110,7 @@ class Index extends Component
                 'customer_phone' => $sale->customer->phone ?? 'N/A',
             ];
             $this->sale_search = $sale->sale_number;
-            // Keep showing recent sales after selection
-            $this->loadRecentSales();
+            $this->sale_results = [];
             
             // Load existing payment schedules
             $this->loadSchedules();
@@ -117,8 +119,8 @@ class Index extends Component
 
     public function loadSchedules()
     {
-        if ($this->selected_sale_id) {
-            $schedules = FlatSalePaymentSchedule::where('flat_sale_id', $this->selected_sale_id)
+        if ($this->selected_flat_id) {
+            $schedules = FlatSalePaymentSchedule::where('flat_id', $this->selected_flat_id)
                 ->orderBy('due_date', 'asc')
                 ->get()
                 ->map(function($schedule) {
@@ -139,7 +141,7 @@ class Index extends Component
 
     public function addEmptyTerm()
     {
-        if (!$this->selected_sale_id) {
+        if (!$this->selected_flat_id) {
             $this->dispatch('show-alert', [
                 'type' => 'error',
                 'message' => 'Please select a flat sale first.'
@@ -187,7 +189,7 @@ class Index extends Component
 
     public function saveSchedule()
     {
-        if (!$this->selected_sale_id) {
+        if (!$this->selected_flat_id) {
             $this->dispatch('show-alert', [
                 'type' => 'error',
                 'message' => 'Please select a flat sale first.'
@@ -218,7 +220,7 @@ class Index extends Component
             DB::beginTransaction();
 
             // Get existing schedule IDs from database
-            $existingScheduleIds = FlatSalePaymentSchedule::where('flat_sale_id', $this->selected_sale_id)
+            $existingScheduleIds = FlatSalePaymentSchedule::where('flat_id', $this->selected_flat_id)
                 ->pluck('id')
                 ->toArray();
             
@@ -252,7 +254,7 @@ class Index extends Component
                 } else {
                     // Create new schedule
                     FlatSalePaymentSchedule::create([
-                        'flat_sale_id' => $this->selected_sale_id,
+                        'flat_id' => $this->selected_flat_id,
                         'term_name' => $item['term_name'],
                         'receivable_amount' => $item['receivable_amount'],
                         'received_amount' => $item['received_amount'] ?? 0,
@@ -286,7 +288,7 @@ class Index extends Component
 
     public function saveAndPrint()
     {
-        if (!$this->selected_sale_id) {
+        if (!$this->selected_flat_id) {
             $this->dispatch('show-alert', [
                 'type' => 'error',
                 'message' => 'Please select a flat sale first.'
@@ -317,7 +319,7 @@ class Index extends Component
             DB::beginTransaction();
 
             // Get existing schedule IDs from database
-            $existingScheduleIds = FlatSalePaymentSchedule::where('flat_sale_id', $this->selected_sale_id)
+            $existingScheduleIds = FlatSalePaymentSchedule::where('flat_id', $this->selected_flat_id)
                 ->pluck('id')
                 ->toArray();
             
@@ -351,7 +353,7 @@ class Index extends Component
                 } else {
                     // Create new schedule
                     FlatSalePaymentSchedule::create([
-                        'flat_sale_id' => $this->selected_sale_id,
+                        'flat_id' => $this->selected_flat_id,
                         'term_name' => $item['term_name'],
                         'receivable_amount' => $item['receivable_amount'],
                         'received_amount' => $item['received_amount'] ?? 0,

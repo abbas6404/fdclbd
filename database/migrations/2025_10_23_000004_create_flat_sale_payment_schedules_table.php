@@ -13,7 +13,7 @@
         {
             Schema::create('flat_sale_payment_schedules', function (Blueprint $table) {
                 $table->id();
-                $table->unsignedBigInteger('flat_sale_id');
+                $table->unsignedBigInteger('flat_id');
                 $table->string('term_name');
                 $table->integer('receivable_amount');
                 $table->integer('received_amount')->default(0); // Amount actually paid so far
@@ -30,7 +30,7 @@
                 $table->unsignedBigInteger('updated_by')->nullable();
                 $table->foreign('updated_by')->references('id')->on('users')->onDelete('cascade');
 
-                $table->foreign('flat_sale_id')->references('id')->on('flat_sales')->onDelete('cascade');
+                $table->foreign('flat_id')->references('id')->on('flats')->onDelete('cascade');
 
             });
         }

@@ -1,10 +1,66 @@
 <div class="container-fluid" wire:click.self="closeAllDropdowns">
     <div class="card shadow">
-        <div class="card-header bg-white py-1">
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0 text-primary">
-                    <i class="fas fa-shopping-cart me-2"></i> Flat Sales
-                </h6>
+        <div class="card-header bg-white py-2">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <h6 class="card-title mb-0 text-primary">
+                        <i class="fas fa-shopping-cart me-2"></i> Flat Sales
+                    </h6>
+                </div>
+                @if(count($selected_flats) > 0 && $selected_flat)
+                <div class="col">
+                    <div class="d-flex align-items-center justify-content-center gap-2 gap-md-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="fas fa-building text-primary"></i>
+                            <strong class="text-primary">{{ $selected_flat['project_name'] ?? 'N/A' }}</strong>
+                        </div>
+                        @if($selected_flat['project_address'] ?? null)
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <span class="text-dark" style="font-size: 0.9rem;">{{ Str::limit($selected_flat['project_address'], 40) }}</span>
+                            </div>
+                        @endif
+                        <span class="text-muted d-none d-md-inline">|</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="fas fa-home text-success"></i>
+                            @if(count($selected_flats) == 1)
+                                <span class="text-dark fw-semibold">{{ $selected_flat['flat_number'] ?? 'N/A' }}</span>
+                            @else
+                                <div class="d-flex align-items-center gap-1 flex-wrap">
+                                    @foreach($selected_flats as $flat)
+                                        <span class="badge bg-primary">{{ $flat['flat_number'] ?? 'N/A' }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                        @if(count($selected_flats) == 1 && !empty($selected_flat['flat_type']))
+                            <span class="badge bg-secondary">{{ $selected_flat['flat_type'] }}</span>
+                        @endif
+                        @if(count($selected_flats) == 1 && !empty($selected_flat['flat_size']))
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-ruler-combined text-warning"></i>
+                                <span class="text-dark">{{ number_format($selected_flat['flat_size'], 2) }} sq ft</span>
+                            </div>
+                        @endif
+                        @if(!empty($customer_name))
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-user text-info"></i>
+                                <span class="text-dark">{{ $customer_name }}</span>
+                            </div>
+                        @endif
+                        @if(!empty($customer_phone))
+                            <span class="text-muted d-none d-md-inline">|</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="fas fa-phone text-success"></i>
+                                <span class="text-dark">{{ $customer_phone }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
         <div class="card-body py-3">
@@ -305,7 +361,6 @@
                                                wire:focus="showRecentProjects"
                                                onblur="setTimeout(() => @this.set('show_project_dropdown', false), 200)"
                                                placeholder="Search project..." 
-                                               value="{{ $selected_project ? $selected_project['project_name'] : '' }}"
                                                autocomplete="off"
                                                autocapitalize="off"
                                                autocorrect="off"
@@ -380,7 +435,6 @@
                                                wire:focus="showRecentFlats"
                                                onblur="setTimeout(() => @this.set('show_flat_dropdown', false), 200)"
                                                placeholder="Search flat number, type, floor..." 
-                                               value="{{ $selected_flat && isset($selected_flat['flat_number']) ? $selected_flat['flat_number'] : '' }}"
                                                autocomplete="off"
                                                autocapitalize="off"
                                                autocorrect="off"
@@ -592,6 +646,23 @@
 </div>
 @push('styles')
     <style>
+/* Header styling for better display */
+.card-header .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+.card-header .d-flex {
+    min-height: 28px;
+}
+.card-header .badge {
+    white-space: nowrap;
+    font-size: 0.75rem;
+    padding: 0.25em 0.5em;
+}
+.card-header .text-muted {
+    margin: 0 0.25rem;
+}
+
 .row.mb-4 {
     display: flex !important;
     flex-wrap: nowrap !important;

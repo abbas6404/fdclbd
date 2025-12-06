@@ -17,6 +17,11 @@
                 <h5 class="mb-0 fw-bold">@yield('title')</h5>
             </div>
             
+            <!-- Center: Page-Specific Button -->
+            <div class="flex-grow-1 text-center d-none d-md-block" id="header-action-button">
+                @stack('header_button')
+            </div>
+            
             <!-- Right Side Of Navbar -->
             <ul class="navbar-nav ms-auto align-items-center">
                 

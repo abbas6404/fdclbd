@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class FlatManagementController extends Controller
+class FlatController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('admin.flat-management.index');
+        return view('admin.flat.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class FlatManagementController extends Controller
      */
     public function create()
     {
-        return view('admin.flat-management.create');
+        return view('admin.flat.create');
     }
 
     /**
@@ -36,7 +36,7 @@ class FlatManagementController extends Controller
      */
     public function show(string $id)
     {
-        return view('admin.flat-management.show', compact('id'));
+        return view('admin.flat.show', compact('id'));
     }
 
     /**
@@ -44,7 +44,7 @@ class FlatManagementController extends Controller
      */
     public function edit(string $id)
     {
-        return view('admin.flat-management.edit', compact('id'));
+        return view('admin.flat.edit', compact('id'));
     }
 
     /**
@@ -63,3 +63,4 @@ class FlatManagementController extends Controller
         //
     }
 }
+

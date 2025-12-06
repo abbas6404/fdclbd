@@ -45,10 +45,8 @@ class FlatSale extends Model
         return $this->belongsTo(SalesAgent::class, 'sales_agent_id');
     }
 
-    public function paymentSchedules()
-    {
-        return $this->hasMany(FlatSalePaymentSchedule::class, 'flat_sale_id');
-    }
+    // Payment schedules are now linked directly to flats, not flat_sales
+    // Use: $flat->paymentSchedules() instead
 
     public function createdBy()
     {

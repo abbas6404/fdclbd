@@ -4,12 +4,16 @@ namespace App\Livewire\Admin\Projects;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 use App\Models\Project;
+use App\Models\Attachment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Index extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public $search = '';
     public $statusFilter = '';
@@ -26,6 +30,12 @@ class Index extends Component
     public $showFlatsModal = false;
     public $flatStatusFilter = null; // 'available', 'sold', 'reserved', or null for all
     public $showArchived = false; // Toggle to show archived projects
+    
+    // Document modal properties
+    public $show_document_modal = false;
+    public $selected_project_id = null;
+    public $document_attachments = [];
+    public $existing_attachments = [];
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -162,6 +172,171 @@ class Index extends Component
     {
         $this->showArchived = !$this->showArchived;
         $this->resetPage();
+    }
+
+    // Document modal methods
+    public function openDocumentModal($projectId)
+    {
+        $this->selected_project_id = $projectId;
+        
+        // Load existing attachments
+        $this->existing_attachments = Attachment::where('project_id', $projectId)
+            ->orderBy('display_order', 'asc')
+            ->get()
+            ->map(function($attachment) {
+                return [
+                    'id' => $attachment->id,
+                    'document_name' => $attachment->document_name,
+                    'file_path' => $attachment->file_path,
+                    'file_size' => $attachment->file_size,
+                    'is_existing' => true,
+                ];
+            })
+            ->toArray();
+        
+        $this->show_document_modal = true;
+        $this->document_attachments = [];
+    }
+
+    public function closeDocumentModal()
+    {
+        $this->show_document_modal = false;
+        $this->document_attachments = [];
+        $this->existing_attachments = [];
+        $this->selected_project_id = null;
+    }
+
+    public function addDocumentAttachment()
+    {
+        $this->document_attachments[] = [
+            'document_name' => '',
+            'file' => null,
+        ];
+    }
+
+    public function removeDocumentAttachment($index)
+    {
+        unset($this->document_attachments[$index]);
+        $this->document_attachments = array_values($this->document_attachments);
+    }
+
+    public function removeExistingAttachment($attachmentId)
+    {
+        try {
+            $attachment = Attachment::find($attachmentId);
+            if ($attachment) {
+                // Soft delete (model uses SoftDeletes trait)
+                $attachment->delete();
+                
+                // Remove from existing attachments array
+                $this->existing_attachments = array_filter($this->existing_attachments, function($item) use ($attachmentId) {
+                    return $item['id'] != $attachmentId;
+                });
+                $this->existing_attachments = array_values($this->existing_attachments);
+                
+                $this->dispatch('show-alert', [
+                    'type' => 'success',
+                    'message' => 'Document removed successfully!'
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error removing document: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function saveDocuments()
+    {
+        if (!$this->selected_project_id) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Project not selected.'
+            ]);
+            return;
+        }
+
+        // Check if there are any new documents to save
+        $hasNewDocuments = false;
+        foreach ($this->document_attachments as $attachment) {
+            if (isset($attachment['file']) && $attachment['file']) {
+                $hasNewDocuments = true;
+                break;
+            }
+        }
+
+        if (!$hasNewDocuments && empty($this->document_attachments)) {
+            // No new documents to save, just close modal
+            $this->closeDocumentModal();
+            return;
+        }
+
+        try {
+            $project = Project::find($this->selected_project_id);
+            if (!$project) {
+                $this->dispatch('show-alert', [
+                    'type' => 'error',
+                    'message' => 'Project not found.'
+                ]);
+                return;
+            }
+
+            $displayOrder = Attachment::where('project_id', $this->selected_project_id)->max('display_order') ?? 0;
+            $savedCount = 0;
+
+            foreach ($this->document_attachments as $attachment) {
+                if (isset($attachment['file']) && $attachment['file']) {
+                    $file = $attachment['file'];
+                    
+                    if (is_object($file) && method_exists($file, 'getClientOriginalName')) {
+                        $extension = $file->getClientOriginalExtension();
+                        $fileName = time() . '_' . uniqid() . '.' . $extension;
+                        $filePath = $file->storeAs('document_soft_copy/project', $fileName, 'public');
+                        
+                        Attachment::create([
+                            'document_name' => $attachment['document_name'] ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                            'file_path' => $filePath,
+                            'file_size' => $file->getSize(),
+                            'display_order' => ++$displayOrder,
+                            'project_id' => $this->selected_project_id,
+                        ]);
+                        $savedCount++;
+                    }
+                }
+            }
+
+            if ($savedCount > 0) {
+                $this->dispatch('show-alert', [
+                    'type' => 'success',
+                    'message' => "{$savedCount} document(s) saved successfully!"
+                ]);
+            }
+
+            // Reload existing attachments
+            $this->existing_attachments = Attachment::where('project_id', $this->selected_project_id)
+                ->orderBy('display_order', 'asc')
+                ->get()
+                ->map(function($attachment) {
+                    return [
+                        'id' => $attachment->id,
+                        'document_name' => $attachment->document_name,
+                        'file_path' => $attachment->file_path,
+                        'file_size' => $attachment->file_size,
+                        'is_existing' => true,
+                    ];
+                })
+                ->toArray();
+
+            // Clear new attachments
+            $this->document_attachments = [];
+
+        } catch (\Exception $e) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Error saving documents: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function render()

@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\AttachmentController;
 
 // Real Estate Controllers
 use App\Http\Controllers\Admin\ProjectController;
-use App\Http\Controllers\Admin\FlatManagementController;
+use App\Http\Controllers\Admin\FlatController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\SalesAgentController;
 use App\Http\Controllers\Admin\SupplierController;
@@ -72,14 +72,14 @@ Route::prefix('projects')->name('projects.')->group(function () {
     Route::delete('/{project}', [ProjectController::class, 'destroy'])->name('destroy');
 });
 
-Route::prefix('project-flat')->name('project-flat.')->group(function () {
-    Route::get('/', [FlatManagementController::class, 'index'])->name('index');
-    Route::get('/create', [FlatManagementController::class, 'create'])->name('create');
-    Route::post('/', [FlatManagementController::class, 'store'])->name('store');
-    Route::get('/{flat}', [FlatManagementController::class, 'show'])->name('show');
-    Route::get('/{flat}/edit', [FlatManagementController::class, 'edit'])->name('edit');
-    Route::put('/{flat}', [FlatManagementController::class, 'update'])->name('update');
-    Route::delete('/{flat}', [FlatManagementController::class, 'destroy'])->name('destroy');
+Route::prefix('flat')->name('flat.')->group(function () {
+    Route::get('/', [FlatController::class, 'index'])->name('index');
+    Route::get('/create', [FlatController::class, 'create'])->name('create');
+    Route::post('/', [FlatController::class, 'store'])->name('store');
+    Route::get('/{flat}', [FlatController::class, 'show'])->name('show');
+    Route::get('/{flat}/edit', [FlatController::class, 'edit'])->name('edit');
+    Route::put('/{flat}', [FlatController::class, 'update'])->name('update');
+    Route::delete('/{flat}', [FlatController::class, 'destroy'])->name('destroy');
 });
 
 // Flat Sales Routes

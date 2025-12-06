@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\FlatManagement;
+namespace App\Livewire\Admin\Flat;
 
 use Livewire\Component;
 use App\Models\ProjectFlat;
@@ -73,7 +73,7 @@ class Edit extends Component
                 'message' => 'Flat updated successfully!'
             ]);
 
-            return $this->redirect(route('admin.project-flat.index'), navigate: true);
+            return $this->redirect(route('admin.flat.index'), navigate: true);
 
         } catch (\Exception $e) {
             $this->dispatch('show-alert', [
@@ -86,6 +86,6 @@ class Edit extends Component
     public function render()
     {
         $projects = Project::orderBy('project_name', 'asc')->get();
-        return view('livewire.admin.flat-management.edit', compact('projects'));
+        return view('livewire.admin.flat.edit', compact('projects'));
     }
 }

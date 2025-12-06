@@ -1,10 +1,12 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Add New Flat')
+@section('title', 'Edit Flat')
 
 @section('content')
 <div class="container-fluid">
     <!-- Livewire Component -->
-    @livewire('admin.flat-management.create', ['project_id' => request()->query('project_id')])
+    @livewire('admin.flat.edit', ['id' => $id])
 </div>
 @endsection
+
+

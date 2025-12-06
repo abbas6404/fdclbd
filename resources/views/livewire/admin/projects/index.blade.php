@@ -225,39 +225,70 @@
                                 </span>
                             </td>
                             <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button type="button" 
-                                            class="btn btn-outline-primary" 
-                                            title="View Flats"
-                                            wire:click="showProjectFlats({{ $project->id }})">
-                                        <i class="fas fa-eye"></i>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" 
+                                            type="button" 
+                                            id="actionDropdown{{ $project->id }}" 
+                                            data-bs-toggle="dropdown" 
+                                            aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    @if(!$showArchived)
-                                    <a href="{{ route('admin.projects.edit', $project->id) }}" 
-                                       class="btn btn-outline-warning" 
-                                       title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" 
-                                            class="btn btn-outline-danger" 
-                                            title="Delete"
-                                            onclick="confirmDelete({{ $project->id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                    @else
-                                        <button type="button" 
-                                                class="btn btn-outline-success" 
-                                                title="Restore"
-                                                wire:click="restoreProject({{ $project->id }})">
-                                            <i class="fas fa-undo"></i>
-                                        </button>
-                                        <button type="button" 
-                                                class="btn btn-outline-danger" 
-                                                title="Permanently Delete"
-                                                onclick="confirmPermanentDelete({{ $project->id }})">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    @endif
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionDropdown{{ $project->id }}">
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="javascript:void(0)" 
+                                               wire:click="showProjectFlats({{ $project->id }})">
+                                                <i class="fas fa-eye me-2 text-info"></i> View Flats
+                                            </a>
+                                        </li>
+                                        @if(!$showArchived)
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item" 
+                                                   href="{{ route('admin.flat.create') }}?project_id={{ $project->id }}">
+                                                    <i class="fas fa-plus me-2 text-success"></i> Add Flat
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" 
+                                                   href="{{ route('admin.projects.edit', $project->id) }}">
+                                                    <i class="fas fa-edit me-2 text-primary"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" 
+                                                   href="javascript:void(0)" 
+                                                   wire:click="openDocumentModal({{ $project->id }})">
+                                                    <i class="fas fa-paperclip me-2 text-info"></i> Add Document
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" 
+                                                   href="javascript:void(0)" 
+                                                   onclick="confirmDelete({{ $project->id }})">
+                                                    <i class="fas fa-trash me-2"></i> Delete
+                                                </a>
+                                            </li>
+                                        @else
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item" 
+                                                   href="javascript:void(0)" 
+                                                   wire:click="restoreProject({{ $project->id }})">
+                                                    <i class="fas fa-undo me-2 text-success"></i> Restore
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" 
+                                                   href="javascript:void(0)" 
+                                                   onclick="confirmPermanentDelete({{ $project->id }})">
+                                                    <i class="fas fa-trash-alt me-2"></i> Permanently Delete
+                                                </a>
+                                            </li>
+                                        @endif
+                                    </ul>
                                 </div>
                             </td>
                         </tr>
@@ -386,12 +417,12 @@
                                         <td>৳{{ number_format($flat->total_price ?? 0, 2) }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ route('admin.project-flat.show', $flat->id) }}" 
+                                                <a href="{{ route('admin.flat.show', $flat->id) }}" 
                                                    class="btn btn-outline-info" 
                                                    title="View">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{{ route('admin.project-flat.edit', $flat->id) }}" 
+                                                <a href="{{ route('admin.flat.edit', $flat->id) }}" 
                                                    class="btn btn-outline-primary" 
                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
@@ -425,7 +456,7 @@
                         <div class="text-center py-5">
                             <i class="fas fa-home fa-3x text-muted mb-3"></i>
                             <p class="text-muted">No flats added to this project yet.</p>
-                            <a href="{{ route('admin.project-flat.create') }}?project_id={{ $selectedProject->id }}" class="btn btn-primary">
+                            <a href="{{ route('admin.flat.create') }}?project_id={{ $selectedProject->id }}" class="btn btn-primary">
                                 <i class="fas fa-plus me-2"></i>Add First Flat
                             </a>
                         </div>
@@ -537,5 +568,130 @@
         });
 
     </script>
+
+    <!-- Document Modal -->
+    @if($show_document_modal)
+    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-paperclip me-2"></i> Add Document
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" wire:click="closeDocumentModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label mb-0 fw-bold text-primary">
+                            <i class="fas fa-paperclip me-1"></i> Document Soft Copy
+                        </label>
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-primary" 
+                                wire:click="addDocumentAttachment">
+                            <i class="fas fa-plus me-1"></i> Add File
+                        </button>
+                    </div>
+                    
+                    @if(!empty($existing_attachments) || !empty($document_attachments))
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;" class="text-center">#</th>
+                                    <th>Document Name</th>
+                                    <th>File</th>
+                                    <th style="width: 100px;" class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Existing Documents -->
+                                @foreach($existing_attachments as $attachment)
+                                <tr class="bg-light">
+                                    <td class="text-center align-middle">
+                                        <span class="text-muted">{{ $loop->iteration }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        {{ $attachment['document_name'] }} <span class="badge bg-info ms-1">(Existing)</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="{{ asset('storage/' . $attachment['file_path']) }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-eye me-1"></i> View/Download
+                                        </a>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-file me-1"></i> {{ number_format($attachment['file_size'] / 1024, 2) }} KB
+                                        </small>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <button type="button" 
+                                                class="btn btn-xs btn-outline-danger" 
+                                                wire:click="removeExistingAttachment({{ $attachment['id'] }})"
+                                                title="Remove">
+                                            <i class="fas fa-trash" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                                
+                                <!-- New Documents -->
+                                @foreach($document_attachments as $index => $attachment)
+                                <tr>
+                                    <td class="text-center">
+                                        <span class="text-muted">{{ count($existing_attachments) + $loop->iteration }}</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" 
+                                               class="form-control form-control-sm" 
+                                               wire:model.blur="document_attachments.{{ $index }}.document_name" 
+                                               placeholder="Enter document name">
+                                    </td>
+                                    <td>
+                                        <input type="file" 
+                                               class="form-control form-control-sm" 
+                                               accept="image/*,.pdf,.doc,.docx"
+                                               wire:model="document_attachments.{{ $index }}.file">
+                                        @if(isset($attachment['file']) && $attachment['file'])
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-file me-1"></i>
+                                                {{ is_string($attachment['file']) ? $attachment['file'] : $attachment['file']->getClientOriginalName() }}
+                                            </small>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" 
+                                                class="btn btn-xs btn-outline-danger" 
+                                                wire:click="removeDocumentAttachment({{ $index }})"
+                                                title="Remove">
+                                            <i class="fas fa-trash" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-file fa-2x mb-2"></i>
+                        <p class="mb-0">Click "Add File" button to add a new document</p>
+                    </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="closeDocumentModal">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" wire:click="saveDocuments" wire:loading.attr="disabled">
+                        <i class="fas fa-save me-1"></i> 
+                        <span wire:loading.remove wire:target="saveDocuments">Save Documents</span>
+                        <span wire:loading wire:target="saveDocuments">Saving...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    @endif
 </div>
 
