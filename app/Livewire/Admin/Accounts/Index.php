@@ -5,6 +5,8 @@ namespace App\Livewire\Admin\Accounts;
 use Livewire\Component;
 use App\Models\HeadOfAccount;
 use App\Models\TreasuryAccount;
+use App\Models\Project;
+use App\Models\PurchaseOrder;
 use App\Models\DebitVoucher;
 use App\Models\DebitVoucherItem;
 use App\Models\CreditVoucher;
@@ -29,6 +31,7 @@ class Index extends Component
     public $account_search = '';
     public $account_results = [];
     public $active_search_type = 'account';
+    public $show_account_dropdown = false; // Control dropdown visibility
     
     // Account entry items
     public $items = []; // Array of items with chart_of_account_id, account_name, amount, description, entry_type (for journal/contra)
@@ -46,9 +49,29 @@ class Index extends Component
     public $treasury_account_id = null;
     public $treasury_accounts = [];
     
+    // Project search
+    public $project_search = '';
+    public $project_results = [];
+    public $selected_project_id = '';
+    public $selected_project = null;
+    public $show_project_dropdown = false;
+    
+    // Purchase Order search
+    public $purchase_order_search = '';
+    public $purchase_order_results = [];
+    public $selected_purchase_order_id = '';
+    public $selected_purchase_order = null;
+    public $show_purchase_order_dropdown = false;
+    
     // Calculated totals
     public $total_debit = 0;
     public $total_credit = 0;
+    
+    // Toggle for showing project in items
+    public $show_project_in_items = false;
+    
+    // Toggle for showing payment method in items
+    public $show_payment_method_in_items = false;
 
     public function loadRecentAccounts()
     {
@@ -106,15 +129,25 @@ class Index extends Component
     public function showRecentAccounts()
     {
         $this->loadRecentAccounts();
+        $this->show_account_dropdown = true;
+    }
+
+    public function hideAccountDropdown()
+    {
+        $this->show_account_dropdown = false;
     }
 
     public function updatedAccountSearch()
     {
         $this->active_search_type = 'account';
         if (strlen($this->account_search) < 2) {
-            $this->loadRecentAccounts();
+            if ($this->show_account_dropdown) {
+                $this->loadRecentAccounts();
+            }
             return;
         }
+        
+        $this->show_account_dropdown = true;
 
         // For contra entries, search treasury accounts
         if ($this->voucher_type === 'contra') {
@@ -184,6 +217,10 @@ class Index extends Component
                     ]);
                     return;
                 }
+                
+                // Hide dropdown after adding
+                $this->show_account_dropdown = false;
+                $this->account_search = '';
 
                 // For contra, default based on current items balance
                 if ($entryType === null) {
@@ -206,9 +243,22 @@ class Index extends Component
                     'description' => '',
                     'entry_type' => $entryType,
                     'is_treasury' => true,
+                    'project_id' => null,
+                    'project_search' => '',
+                    'project_results' => [],
+                    'show_project_dropdown' => false,
+                    'purchase_order_id' => null,
+                    'purchase_order_search' => '',
+                    'purchase_order_results' => [],
+                    'show_po_dropdown' => false,
+                    'treasury_account_id_item' => null,
+                    'treasury_account_search' => '',
+                    'treasury_account_results' => [],
+                    'show_treasury_dropdown' => false,
+                    'bank_name' => '',
+                    'check_number' => '',
                 ];
                 
-                $this->account_search = '';
                 $this->loadRecentAccounts();
                 $this->calculateTotals();
             }
@@ -226,6 +276,10 @@ class Index extends Component
                     ]);
                     return;
                 }
+
+                // Hide dropdown after adding
+                $this->show_account_dropdown = false;
+                $this->account_search = '';
 
                 // For journal entries, determine entry_type based on account type
                 if ($this->voucher_type === 'journal') {
@@ -248,9 +302,22 @@ class Index extends Component
                     'description' => '',
                     'entry_type' => $entryType ?? ($this->voucher_type === 'debit' ? 'debit' : 'credit'),
                     'is_treasury' => false,
+                    'project_id' => null,
+                    'project_search' => '',
+                    'project_results' => [],
+                    'show_project_dropdown' => false,
+                    'purchase_order_id' => null,
+                    'purchase_order_search' => '',
+                    'purchase_order_results' => [],
+                    'show_po_dropdown' => false,
+                    'treasury_account_id_item' => null,
+                    'treasury_account_search' => '',
+                    'treasury_account_results' => [],
+                    'show_treasury_dropdown' => false,
+                    'bank_name' => '',
+                    'check_number' => '',
                 ];
                 
-                $this->account_search = '';
                 $this->loadRecentAccounts();
                 $this->calculateTotals();
             }
@@ -274,6 +341,289 @@ class Index extends Component
         if (str_contains($key, '.entry_type')) {
             $this->calculateTotals();
         }
+        
+        // Handle per-item purchase order search
+        if (preg_match('/items\.(\d+)\.purchase_order_search/', $key, $matches)) {
+            $index = $matches[1];
+            $searchTerm = $this->items[$index]['purchase_order_search'] ?? '';
+            if (strlen($searchTerm) >= 2) {
+                $this->items[$index]['purchase_order_results'] = PurchaseOrder::with('supplier')
+                    ->where('purchase_order_number', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('supplier', function($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orderBy('purchase_order_date', 'desc')
+                    ->limit(10)
+                    ->get()
+                    ->map(function($po) {
+                        return [
+                            'id' => $po->id,
+                            'purchase_order_number' => $po->purchase_order_number,
+                            'purchase_order_date' => $po->purchase_order_date->format('d M Y'),
+                            'supplier_name' => $po->supplier->name ?? 'N/A',
+                            'total_amount' => $po->total_amount ?? 0,
+                        ];
+                    })
+                    ->toArray();
+                $this->items[$index]['show_po_dropdown'] = true;
+            } else {
+                $this->items[$index]['purchase_order_results'] = [];
+                $this->items[$index]['show_po_dropdown'] = false;
+            }
+        }
+        
+        // Handle per-item project search
+        if (preg_match('/items\.(\d+)\.project_search/', $key, $matches)) {
+            $index = $matches[1];
+            $searchTerm = $this->items[$index]['project_search'] ?? '';
+            if (strlen($searchTerm) >= 2) {
+                $this->items[$index]['project_results'] = Project::where('project_name', 'like', "%{$searchTerm}%")
+                    ->orWhere('address', 'like', "%{$searchTerm}%")
+                    ->orderBy('project_name', 'asc')
+                    ->limit(10)
+                    ->get()
+                    ->map(function($project) {
+                        return [
+                            'id' => $project->id,
+                            'name' => $project->project_name,
+                            'address' => $project->address ?? '',
+                        ];
+                    })
+                    ->toArray();
+                $this->items[$index]['show_project_dropdown'] = true;
+            } else {
+                $this->items[$index]['project_results'] = [];
+                $this->items[$index]['show_project_dropdown'] = false;
+            }
+        }
+        
+        // Handle per-item treasury account search
+        if (preg_match('/items\.(\d+)\.treasury_account_search/', $key, $matches)) {
+            $index = $matches[1];
+            $searchTerm = $this->items[$index]['treasury_account_search'] ?? '';
+            if (strlen($searchTerm) >= 2) {
+                $this->items[$index]['treasury_account_results'] = TreasuryAccount::where('status', 'active')
+                    ->where(function($q) use ($searchTerm) {
+                        $q->where('account_name', 'like', "%{$searchTerm}%")
+                          ->orWhere('bank_name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orderBy('account_name', 'asc')
+                    ->limit(10)
+                    ->get()
+                    ->map(function($treasury) {
+                        return [
+                            'id' => $treasury->id,
+                            'account_name' => $treasury->account_name,
+                            'account_type' => $treasury->account_type,
+                            'bank_name' => $treasury->bank_name ?? null,
+                        ];
+                    })
+                    ->toArray();
+                $this->items[$index]['show_treasury_dropdown'] = true;
+            } else {
+                $this->items[$index]['treasury_account_results'] = [];
+                $this->items[$index]['show_treasury_dropdown'] = false;
+            }
+        }
+    }
+
+    public function showPurchaseOrderDropdown($index)
+    {
+        if (!isset($this->items[$index])) return;
+        
+        // Close ALL dropdowns first (including the current one if it's already open)
+        foreach ($this->items as $i => $item) {
+            $this->items[$i]['show_po_dropdown'] = false;
+            $this->items[$i]['show_project_dropdown'] = false;
+            $this->items[$i]['show_treasury_dropdown'] = false;
+        }
+        
+        // Now open only the requested dropdown
+        $this->items[$index]['show_po_dropdown'] = true;
+        if (strlen($this->items[$index]['purchase_order_search'] ?? '') < 2) {
+            $this->items[$index]['purchase_order_results'] = PurchaseOrder::with('supplier')
+                ->orderBy('purchase_order_date', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function($po) {
+                    return [
+                        'id' => $po->id,
+                        'purchase_order_number' => $po->purchase_order_number,
+                        'purchase_order_date' => $po->purchase_order_date->format('d M Y'),
+                        'supplier_name' => $po->supplier->name ?? 'N/A',
+                        'total_amount' => $po->total_amount ?? 0,
+                    ];
+                })
+                ->toArray();
+        }
+    }
+
+    public function hidePurchaseOrderDropdownItem($index)
+    {
+        if (isset($this->items[$index])) {
+            $this->items[$index]['show_po_dropdown'] = false;
+        }
+    }
+
+    public function selectItemPurchaseOrder($poId, $itemIndex)
+    {
+        $po = PurchaseOrder::with('supplier')->find($poId);
+        if ($po && isset($this->items[$itemIndex])) {
+            $this->items[$itemIndex]['purchase_order_id'] = $po->id;
+            $this->items[$itemIndex]['purchase_order_search'] = $po->purchase_order_number;
+            $this->items[$itemIndex]['purchase_order_results'] = [];
+            $this->items[$itemIndex]['show_po_dropdown'] = false;
+        }
+    }
+    
+    public function showProjectDropdown($index)
+    {
+        if (!isset($this->items[$index])) return;
+        
+        // Close ALL dropdowns first (including the current one if it's already open)
+        foreach ($this->items as $i => $item) {
+            $this->items[$i]['show_project_dropdown'] = false;
+            $this->items[$i]['show_treasury_dropdown'] = false;
+            $this->items[$i]['show_po_dropdown'] = false;
+        }
+        
+        // Now open only the requested dropdown
+        $this->items[$index]['show_project_dropdown'] = true;
+        if (strlen($this->items[$index]['project_search'] ?? '') < 2) {
+            $this->items[$index]['project_results'] = Project::orderBy('project_name', 'asc')
+                ->limit(10)
+                ->get()
+                ->map(function($project) {
+                    return [
+                        'id' => $project->id,
+                        'name' => $project->project_name,
+                        'address' => $project->address ?? '',
+                    ];
+                })
+                ->toArray();
+        }
+    }
+    
+    public function hideProjectDropdownItem($index)
+    {
+        if (isset($this->items[$index])) {
+            $this->items[$index]['show_project_dropdown'] = false;
+        }
+    }
+    
+    public function selectItemProject($projectId, $itemIndex)
+    {
+        $project = Project::find($projectId);
+        if ($project && isset($this->items[$itemIndex])) {
+            $this->items[$itemIndex]['project_id'] = $project->id;
+            $this->items[$itemIndex]['project_search'] = $project->project_name;
+            $this->items[$itemIndex]['project_results'] = [];
+            $this->items[$itemIndex]['show_project_dropdown'] = false;
+        }
+    }
+
+    public function updatedShowProjectInItems()
+    {
+        if ($this->show_project_in_items) {
+            // When toggle is ON: Clear form-level project, allow per-item projects
+            $this->selected_project_id = '';
+            $this->selected_project = null;
+            $this->project_search = '';
+            $this->show_project_dropdown = false;
+        } else {
+            // When toggle is OFF: Clear all per-item projects, use form-level project
+            foreach ($this->items as $index => $item) {
+                $this->items[$index]['project_id'] = null;
+                $this->items[$index]['project_search'] = '';
+                $this->items[$index]['project_results'] = [];
+                $this->items[$index]['show_project_dropdown'] = false;
+            }
+        }
+    }
+
+    public function updatedShowPaymentMethodInItems()
+    {
+        if ($this->show_payment_method_in_items) {
+            // When toggle is ON: Clear form-level payment method, allow per-item payment methods
+            $this->treasury_account_id = null;
+        } else {
+            // When toggle is OFF: Clear all per-item payment methods, use form-level payment method
+            foreach ($this->items as $index => $item) {
+                $this->items[$index]['treasury_account_id_item'] = null;
+                $this->items[$index]['treasury_account_search'] = '';
+                $this->items[$index]['treasury_account_results'] = [];
+                $this->items[$index]['show_treasury_dropdown'] = false;
+                $this->items[$index]['bank_name'] = '';
+                $this->items[$index]['check_number'] = '';
+            }
+        }
+    }
+
+    public function showTreasuryDropdown($index)
+    {
+        if (!isset($this->items[$index])) return;
+        
+        // Close ALL dropdowns first (including the current one if it's already open)
+        foreach ($this->items as $i => $item) {
+            $this->items[$i]['show_treasury_dropdown'] = false;
+            $this->items[$i]['show_project_dropdown'] = false;
+            $this->items[$i]['show_po_dropdown'] = false;
+        }
+        
+        // Now open only the requested dropdown
+        $this->items[$index]['show_treasury_dropdown'] = true;
+        $this->loadRecentTreasuryAccounts($index);
+    }
+
+    public function hideTreasuryDropdownItem($index)
+    {
+        if (!isset($this->items[$index])) return;
+        $this->items[$index]['show_treasury_dropdown'] = false;
+    }
+
+    public function loadRecentTreasuryAccounts($index)
+    {
+        if (!isset($this->items[$index])) return;
+        
+        $this->items[$index]['treasury_account_results'] = TreasuryAccount::where('status', 'active')
+            ->orderBy('account_name', 'asc')
+            ->limit(20)
+            ->get()
+            ->map(function($treasury) {
+                return [
+                    'id' => $treasury->id,
+                    'account_name' => $treasury->account_name,
+                    'account_type' => $treasury->account_type,
+                    'bank_name' => $treasury->bank_name ?? null,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function selectItemTreasuryAccount($treasuryId, $itemIndex)
+    {
+        if (!isset($this->items[$itemIndex])) return;
+        
+        $treasury = TreasuryAccount::find($treasuryId);
+        if ($treasury) {
+            $this->items[$itemIndex]['treasury_account_id_item'] = $treasury->id;
+            $this->items[$itemIndex]['treasury_account_search'] = $treasury->account_name . 
+                ($treasury->account_type == 'bank' ? ' (' . ($treasury->bank_name ?? 'Bank') . ')' : ' (Cash)');
+            $this->items[$itemIndex]['show_treasury_dropdown'] = false;
+            
+            // Clear bank fields if not bank
+            if ($treasury->account_type !== 'bank') {
+                $this->items[$itemIndex]['bank_name'] = '';
+                $this->items[$itemIndex]['check_number'] = '';
+            }
+        }
+    }
+    
+    public function isBankPayment()
+    {
+        if (!$this->treasury_account_id) return false;
+        $treasury = TreasuryAccount::find($this->treasury_account_id);
+        return $treasury && $treasury->account_type === 'bank';
     }
 
     public function calculateTotals()
@@ -432,7 +782,11 @@ class Index extends Component
         if ($this->voucher_type === 'debit' || $this->voucher_type === 'credit') {
             $rules['items.*.chart_of_account_id'] = 'required|exists:head_of_accounts,id';
             $rules['items.*.amount'] = 'required|numeric|min:0.01';
-            $rules['treasury_account_id'] = 'required|exists:treasury_accounts,id';
+            if ($this->show_payment_method_in_items) {
+                $rules['items.*.treasury_account_id_item'] = 'required|exists:treasury_accounts,id';
+            } else {
+                $rules['treasury_account_id'] = 'required|exists:treasury_accounts,id';
+            }
         }
 
         // For journal entries
@@ -477,6 +831,8 @@ class Index extends Component
             'items.*.amount.min' => 'Amount must be greater than 0.',
             'treasury_account_id.required' => 'Please select a payment method.',
             'treasury_account_id.exists' => 'Selected payment method is invalid.',
+            'items.*.treasury_account_id_item.required' => 'Please select a payment method for this item.',
+            'items.*.treasury_account_id_item.exists' => 'Selected payment method is invalid.',
         ];
 
         $this->validate($rules, $messages);
@@ -532,11 +888,22 @@ class Index extends Component
 
                 // Create debit voucher items
                 foreach ($this->items as $item) {
+                    $treasuryAccountId = $this->show_payment_method_in_items 
+                        ? (!empty($item['treasury_account_id_item']) ? $item['treasury_account_id_item'] : null)
+                        : $this->treasury_account_id;
+                    
                     DebitVoucherItem::create([
                         'debit_voucher_id' => $voucher->id,
                         'head_of_account_id' => $item['chart_of_account_id'],
+                        'treasury_account_id' => $treasuryAccountId,
+                        'project_id' => $this->show_project_in_items 
+                            ? (!empty($item['project_id']) ? $item['project_id'] : null)
+                            : ($this->selected_project_id ?: null),
+                        'purchase_order_id' => !empty($item['purchase_order_id']) ? $item['purchase_order_id'] : null,
                         'amount' => (int) round($item['amount'] ?? 0),
                         'description' => $item['description'] ?? null,
+                        'bank_name' => $item['bank_name'] ?? null,
+                        'check_number' => $item['check_number'] ?? null,
                         'created_by' => Auth::id(),
                         'updated_by' => Auth::id(),
                     ]);
@@ -574,11 +941,22 @@ class Index extends Component
 
                 // Create credit voucher items
                 foreach ($this->items as $item) {
+                    $treasuryAccountId = $this->show_payment_method_in_items 
+                        ? (!empty($item['treasury_account_id_item']) ? $item['treasury_account_id_item'] : null)
+                        : $this->treasury_account_id;
+                    
                     CreditVoucherItem::create([
                         'credit_voucher_id' => $voucher->id,
                         'head_of_account_id' => $item['chart_of_account_id'],
+                        'treasury_account_id' => $treasuryAccountId,
+                        'project_id' => $this->show_project_in_items 
+                            ? (!empty($item['project_id']) ? $item['project_id'] : null)
+                            : ($this->selected_project_id ?: null),
+                        'purchase_order_id' => !empty($item['purchase_order_id']) ? $item['purchase_order_id'] : null,
                         'amount' => (int) round($item['amount'] ?? 0),
                         'description' => $item['description'] ?? null,
+                        'bank_name' => $item['bank_name'] ?? null,
+                        'check_number' => $item['check_number'] ?? null,
                         'created_by' => Auth::id(),
                         'updated_by' => Auth::id(),
                     ]);
@@ -744,6 +1122,19 @@ class Index extends Component
         }
     }
 
+    public function updatedTreasuryAccountId()
+    {
+        // Clear bank fields when treasury account changes
+        foreach ($this->items as $index => $item) {
+            if (isset($this->items[$index]['bank_name'])) {
+                $this->items[$index]['bank_name'] = '';
+            }
+            if (isset($this->items[$index]['check_number'])) {
+                $this->items[$index]['check_number'] = '';
+            }
+        }
+    }
+
     public function resetForm()
     {
         $this->entry_date = now()->format('Y-m-d');
@@ -755,15 +1146,27 @@ class Index extends Component
         $this->total_credit = 0;
         $this->account_search = '';
         $this->selected_opposite_account_id = '';
+        $this->show_project_in_items = false;
+        $this->show_payment_method_in_items = false;
         $this->selected_opposite_account = null;
         $this->opposite_account_search = '';
         $this->opposite_amount = 0;
         $this->opposite_description = '';
         $this->payment_method = 'cash';
         $this->treasury_account_id = null;
+        $this->selected_project_id = '';
+        $this->selected_project = null;
+        $this->project_search = '';
+        $this->show_project_dropdown = false;
+        $this->selected_purchase_order_id = '';
+        $this->selected_purchase_order = null;
+        $this->purchase_order_search = '';
+        $this->show_purchase_order_dropdown = false;
         $this->loadRecentAccounts();
         $this->loadOppositeAccounts();
         $this->loadTreasuryAccounts();
+        $this->loadRecentProjects();
+        $this->loadRecentPurchaseOrders();
     }
 
     public function mount()
@@ -775,6 +1178,167 @@ class Index extends Component
         $this->loadRecentAccounts();
         $this->loadOppositeAccounts();
         $this->loadTreasuryAccounts();
+        $this->loadRecentProjects();
+        $this->loadRecentPurchaseOrders();
+    }
+
+    public function loadRecentProjects()
+    {
+        $this->project_results = Project::orderBy('project_name', 'asc')
+            ->limit(20)
+            ->get()
+            ->map(function($project) {
+                return [
+                    'id' => $project->id,
+                    'project_name' => $project->project_name,
+                    'address' => $project->address ?? '',
+                ];
+            })
+            ->toArray();
+    }
+
+    public function showRecentProjects()
+    {
+        $this->loadRecentProjects();
+        $this->show_project_dropdown = true;
+    }
+
+    public function hideProjectDropdown()
+    {
+        $this->show_project_dropdown = false;
+    }
+
+    public function hideAllDropdowns()
+    {
+        $this->hideAccountDropdown();
+        $this->hideProjectDropdown();
+        $this->hidePurchaseOrderDropdown();
+    }
+
+    public function updatedProjectSearch()
+    {
+        if (strlen($this->project_search) < 2) {
+            if ($this->show_project_dropdown) {
+                $this->loadRecentProjects();
+            }
+            return;
+        }
+        
+        $this->show_project_dropdown = true;
+        $this->project_results = Project::where('project_name', 'like', "%{$this->project_search}%")
+            ->orWhere('address', 'like', "%{$this->project_search}%")
+            ->orderBy('project_name', 'asc')
+            ->limit(20)
+            ->get()
+            ->map(function($project) {
+                return [
+                    'id' => $project->id,
+                    'project_name' => $project->project_name,
+                    'address' => $project->address ?? '',
+                ];
+            })
+            ->toArray();
+    }
+
+    public function selectProject($projectId)
+    {
+        $project = Project::find($projectId);
+        if ($project) {
+            $this->selected_project_id = $project->id;
+            $this->selected_project = $project;
+            $this->project_search = $project->project_name;
+            $this->project_results = [];
+            $this->show_project_dropdown = false;
+            $this->loadRecentProjects();
+        }
+    }
+
+    public function clearProject()
+    {
+        $this->selected_project_id = '';
+        $this->selected_project = null;
+        $this->project_search = '';
+        $this->loadRecentProjects();
+    }
+
+    public function loadRecentPurchaseOrders()
+    {
+        $this->purchase_order_results = PurchaseOrder::with('supplier')
+            ->orderBy('purchase_order_date', 'desc')
+            ->limit(20)
+            ->get()
+            ->map(function($po) {
+                return [
+                    'id' => $po->id,
+                    'purchase_order_number' => $po->purchase_order_number,
+                    'purchase_order_date' => $po->purchase_order_date->format('d M Y'),
+                    'supplier_name' => $po->supplier->name ?? 'N/A',
+                    'total_amount' => $po->total_amount ?? 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function showRecentPurchaseOrders()
+    {
+        $this->loadRecentPurchaseOrders();
+        $this->show_purchase_order_dropdown = true;
+    }
+
+    public function hidePurchaseOrderDropdown()
+    {
+        $this->show_purchase_order_dropdown = false;
+    }
+
+    public function updatedPurchaseOrderSearch()
+    {
+        if (strlen($this->purchase_order_search) < 2) {
+            if ($this->show_purchase_order_dropdown) {
+                $this->loadRecentPurchaseOrders();
+            }
+            return;
+        }
+        
+        $this->show_purchase_order_dropdown = true;
+        $this->purchase_order_results = PurchaseOrder::with('supplier')
+            ->where('purchase_order_number', 'like', "%{$this->purchase_order_search}%")
+            ->orWhereHas('supplier', function($q) {
+                $q->where('name', 'like', "%{$this->purchase_order_search}%");
+            })
+            ->orderBy('purchase_order_date', 'desc')
+            ->limit(20)
+            ->get()
+            ->map(function($po) {
+                return [
+                    'id' => $po->id,
+                    'purchase_order_number' => $po->purchase_order_number,
+                    'purchase_order_date' => $po->purchase_order_date->format('d M Y'),
+                    'supplier_name' => $po->supplier->name ?? 'N/A',
+                    'total_amount' => $po->total_amount ?? 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function selectPurchaseOrder($poId)
+    {
+        $po = PurchaseOrder::with('supplier')->find($poId);
+        if ($po) {
+            $this->selected_purchase_order_id = $po->id;
+            $this->selected_purchase_order = $po;
+            $this->purchase_order_search = $po->purchase_order_number;
+            $this->purchase_order_results = [];
+            $this->show_purchase_order_dropdown = false;
+            $this->loadRecentPurchaseOrders();
+        }
+    }
+
+    public function clearPurchaseOrder()
+    {
+        $this->selected_purchase_order_id = '';
+        $this->selected_purchase_order = null;
+        $this->purchase_order_search = '';
+        $this->loadRecentPurchaseOrders();
     }
 
     public function render()

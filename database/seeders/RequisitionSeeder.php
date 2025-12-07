@@ -21,7 +21,7 @@ class RequisitionSeeder extends Seeder
         $employees = Employee::all();
         $projects = Project::all();
         $expenseAccounts = HeadOfAccount::where('account_type', 'expense')
-            ->where('show_in_requisition', true)
+            ->where('is_requisitions', true)
             ->get();
 
         if ($employees->isEmpty() || $expenseAccounts->isEmpty()) {

@@ -16,9 +16,9 @@ return new class extends Migration
             $table->id();
             $table->string('sale_number')->nullable()->unique()->index(); // SALE-001, SALE-002, etc.
 
-            $table->unsignedBigInteger('customer_id');
-            $table->unsignedBigInteger('flat_id');
-            $table->unsignedBigInteger('sales_agent_id')->nullable();
+            $table->unsignedBigInteger('customer_id')->index();
+            $table->unsignedBigInteger('flat_id')->unique()->index();
+            $table->unsignedBigInteger('sales_agent_id')->nullable()->index();
 
 
             $table->date('sale_date');

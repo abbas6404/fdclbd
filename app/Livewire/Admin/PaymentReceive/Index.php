@@ -26,6 +26,10 @@ class Index extends Component
     public $selected_customer = null;
     public $active_search_type = 'recent'; // 'recent' or 'search'
     
+    // Date filters
+    public $date_from = '';
+    public $date_to = '';
+    
     // Payment schedule items
     public $pending_schedules = [];
     public $selected_schedules = []; // Array of schedule IDs with payment amounts
@@ -60,13 +64,22 @@ class Index extends Component
     public function loadCustomersWithPendingPayments()
     {
         // Get customers with pending payment schedules, grouped by customer and flat
-        $listData = DB::table('customers')
+        $query = DB::table('customers')
             ->join('flat_sales', 'customers.id', '=', 'flat_sales.customer_id')
             ->join('flats', 'flat_sales.flat_id', '=', 'flats.id')
             ->leftJoin('projects', 'flats.project_id', '=', 'projects.id')
             ->join('flat_sale_payment_schedules', 'flats.id', '=', 'flat_sale_payment_schedules.flat_id')
-            ->whereIn('flat_sale_payment_schedules.status', ['pending', 'partial'])
-            ->select(
+            ->whereIn('flat_sale_payment_schedules.status', ['pending', 'partial']);
+        
+        // Apply date filters if provided
+        if ($this->date_from) {
+            $query->whereDate('flat_sale_payment_schedules.due_date', '>=', $this->date_from);
+        }
+        if ($this->date_to) {
+            $query->whereDate('flat_sale_payment_schedules.due_date', '<=', $this->date_to);
+        }
+        
+        $listData = $query->select(
                 'customers.id as customer_id',
                 'customers.name as customer_name',
                 'customers.phone as customer_phone',
@@ -156,6 +169,29 @@ class Index extends Component
     public function showRecentCustomers()
     {
         $this->loadRecentCustomers();
+    }
+
+    public function updatedDateFrom()
+    {
+        if ($this->view_mode === 'list') {
+            $this->loadCustomersWithPendingPayments();
+        }
+    }
+
+    public function updatedDateTo()
+    {
+        if ($this->view_mode === 'list') {
+            $this->loadCustomersWithPendingPayments();
+        }
+    }
+
+    public function clearDateFilters()
+    {
+        $this->date_from = '';
+        $this->date_to = '';
+        if ($this->view_mode === 'list') {
+            $this->loadCustomersWithPendingPayments();
+        }
     }
 
     public function updatedCustomerSearch()
@@ -373,7 +409,6 @@ class Index extends Component
             'cheque_number' => '',
             'bank_name' => '',
             'cheque_amount' => '',
-            'cheque_date' => '',
         ];
         
         // Automatically set payment method to cheque when adding a cheque row
@@ -425,7 +460,7 @@ class Index extends Component
 
         // Validate payment method and amount
         $validationRules = [
-            'payment_method' => 'required|in:cash,bank_transfer,cheque,card,mobile_banking',
+            'payment_method' => 'required|in:cash,cheque',
             'total_payment_amount' => 'required|numeric|min:1',
         ];
 
@@ -447,7 +482,7 @@ class Index extends Component
 
             // Validate all cheque fields are filled
             foreach ($this->cheques as $index => $cheque) {
-                if (empty($cheque['cheque_number']) || empty($cheque['bank_name']) || empty($cheque['cheque_amount']) || empty($cheque['cheque_date'])) {
+                if (empty($cheque['cheque_number']) || empty($cheque['bank_name']) || empty($cheque['cheque_amount'])) {
                     $this->dispatch('show-alert', [
                         'type' => 'error',
                         'message' => 'Please fill in all required fields for all cheques.'
@@ -558,7 +593,7 @@ class Index extends Component
                             'cheque_number' => $chequeData['cheque_number'],
                             'bank_name' => $chequeData['bank_name'],
                             'cheque_amount' => $chequeData['cheque_amount'],
-                            'cheque_date' => $chequeData['cheque_date'],
+                            'cheque_date' => null,
                             'created_by' => Auth::id(),
                             'updated_by' => Auth::id(),
                         ]);

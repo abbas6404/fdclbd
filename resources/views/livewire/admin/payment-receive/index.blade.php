@@ -3,13 +3,37 @@
     @if($view_mode === 'list')
     <div class="card shadow mb-3">
         <div class="card-header bg-white py-1">
-            <div class="row align-items-center">
+            <div class="row align-items-center g-2">
                 <div class="col-auto">
                     <h6 class="card-title mb-0 text-primary" style="font-size: 0.95rem;">
                         <i class="fas fa-money-bill-wave me-2"></i> Payment Receive
                     </h6>
                 </div>
-                <div class="col-md-6 ms-auto">
+                <div class="col-md-2">
+                    <input type="date" 
+                           class="form-control form-control-sm" 
+                           wire:model.live="date_from" 
+                           placeholder="From Date"
+                           title="Filter by due date from">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" 
+                           class="form-control form-control-sm" 
+                           wire:model.live="date_to" 
+                           placeholder="To Date"
+                           title="Filter by due date to">
+                </div>
+                @if($date_from || $date_to)
+                <div class="col-auto">
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-secondary" 
+                            wire:click="clearDateFilters"
+                            title="Clear date filters">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                @endif
+                <div class="col-md-4 ms-auto">
                     <input type="text" 
                            class="form-control form-control-sm" 
                            wire:model.live.debounce.300ms="customer_search" 
@@ -237,8 +261,11 @@
                         </div>
                     </div>
 
-                    <!-- Cheque Entry Card -->
-                    <div class="card border mt-3">
+                    <!-- Cheque Entry and Payment Summary Row -->
+                    <div class="row mt-3 g-3">
+                        <!-- Cheque Entry Card - Left Side -->
+                        <div class="col-md-6">
+                            <div class="card border h-100">
                         <div class="card-header bg-light py-1 d-flex justify-content-between align-items-center">
                             <h6 class="mb-0"><i class="fas fa-money-check-alt me-1"></i> Cheque Entry</h6>
                             <button type="button" 
@@ -258,7 +285,6 @@
                                             <th>Cheque Number</th>
                                             <th>Bank Name</th>
                                             <th>Amount</th>
-                                            <th>Date</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -288,12 +314,6 @@
                                                        step="1"
                                                        style="width: 100%; height: 100%; min-height: 38px;">
                                             </td>
-                                            <td class="p-0">
-                                                <input type="date" 
-                                                       class="form-control form-control-sm border-0 rounded-0" 
-                                                       wire:model.live="cheques.{{ $index }}.cheque_date"
-                                                       style="width: 100%; height: 100%; min-height: 38px;">
-                                            </td>
                                             <td class="align-middle text-center">
                                                 <button type="button" 
                                                         class="btn btn-sm btn-danger" 
@@ -318,7 +338,7 @@
                                                 @endphp
                                                 {{ number_format($total, 0) }}
                                             </th>
-                                            <th colspan="2"></th>
+                                                    <th></th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -329,11 +349,13 @@
                                 <p class="mb-0">Click "Add Cheque" to add cheque entries</p>
                             </div>
                             @endif
+                                </div>
                         </div>
                     </div>
 
-                    <!-- Payment Summary Card -->
-                    <div class="card border mt-3">
+                        <!-- Payment Summary Card - Right Side -->
+                        <div class="col-md-6">
+                            <div class="card border h-100">
                         <div class="card-header bg-primary text-white py-1">
                             <h6 class="mb-0"><i class="fas fa-file-invoice-dollar me-1"></i> Payment Summary</h6>
                         </div>
@@ -360,10 +382,7 @@
                                             wire:model="payment_method"
                                             {{ !$selected_customer || count($selected_schedules) === 0 ? 'disabled' : '' }}>
                                         <option value="cash">Cash</option>
-                                        <option value="bank_transfer">Bank Transfer</option>
                                         <option value="cheque">Cheque</option>
-                                        <option value="card">Card</option>
-                                        <option value="mobile_banking">Mobile Banking</option>
                                     </select>
                                     @error('payment_method') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
@@ -393,6 +412,8 @@
                                     <span wire:loading.remove wire:target="saveAndPrint">Save & Print</span>
                                     <span wire:loading wire:target="saveAndPrint">Saving...</span>
                                 </button>
+                            </div>
+                        </div>
                             </div>
                         </div>
                     </div>

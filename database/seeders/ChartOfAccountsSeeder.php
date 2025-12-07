@@ -313,6 +313,7 @@ class ChartOfAccountsSeeder extends Seeder
             'parent_id' => $adminExpense->id,
             'account_level' => '3',
             'status' => 'active',
+            'is_requisitions' => true,
             'created_by' => 1,
         ]);
 
@@ -322,6 +323,7 @@ class ChartOfAccountsSeeder extends Seeder
             'parent_id' => $adminExpense->id,
             'account_level' => '3',
             'status' => 'active',
+            'is_requisitions' => true,
             'created_by' => 1,
         ]);
 
@@ -358,6 +360,8 @@ class ChartOfAccountsSeeder extends Seeder
             'parent_id' => $adminExpense->id,
             'account_level' => '3',
             'status' => 'active',
+            'is_boq' => true,
+            'is_requisitions' => true,
             'created_by' => 1,
         ]);
 
@@ -367,6 +371,7 @@ class ChartOfAccountsSeeder extends Seeder
             'parent_id' => $adminExpense->id,
             'account_level' => '3',
             'status' => 'active',
+            'is_boq' => true,
             'created_by' => 1,
         ]);
 
@@ -376,6 +381,7 @@ class ChartOfAccountsSeeder extends Seeder
             'parent_id' => $adminExpense->id,
             'account_level' => '3',
             'status' => 'active',
+            'is_boq' => true,
             'created_by' => 1,
         ]);
 
@@ -505,44 +511,44 @@ class ChartOfAccountsSeeder extends Seeder
             // Washing and Cleaning Expense - Level 4
             ['account_name' => 'Washing And Cleaning (All Type)', 'parent_id' => $washingAndCleaningExpense->id, 'account_level' => '4'],
             
-            // Office Stationary - Level 4
-            ['account_name' => 'Office Stationary (All)', 'parent_id' => $officeStationary->id, 'account_level' => '4'],
+            // Office Stationary - Level 4 (Requisition accounts)
+            ['account_name' => 'Office Stationary (All)', 'parent_id' => $officeStationary->id, 'account_level' => '4', 'is_requisitions' => true],
             
-            // Printing And Packaging - Level 4
-            ['account_name' => 'Printing and Packaging Exp', 'parent_id' => $printingAndPackaging->id, 'account_level' => '4'],
+            // Printing And Packaging - Level 4 (Requisition accounts)
+            ['account_name' => 'Printing and Packaging Exp', 'parent_id' => $printingAndPackaging->id, 'account_level' => '4', 'is_requisitions' => true],
             
             // Return/Sales Return - Level 4
             ['account_name' => 'Return Bill', 'parent_id' => $returnSalesReturn->id, 'account_level' => '4'],
             
-            // Courier Service Charge - Level 4
-            ['account_name' => 'Courier Service Charge', 'parent_id' => $courierServiceCharge->id, 'account_level' => '4'],
+            // Courier Service Charge - Level 4 (Requisition accounts)
+            ['account_name' => 'Courier Service Charge', 'parent_id' => $courierServiceCharge->id, 'account_level' => '4', 'is_requisitions' => true],
             
-            // Fuel/CNG - Level 4
-            ['account_name' => 'Fuel For Generator', 'parent_id' => $fuelCNG->id, 'account_level' => '4'],
+            // Fuel/CNG - Level 4 (Requisition accounts)
+            ['account_name' => 'Fuel For Generator', 'parent_id' => $fuelCNG->id, 'account_level' => '4', 'is_requisitions' => true],
             ['account_name' => 'Fuel For Office Vehicle', 'parent_id' => $fuelCNG->id, 'account_level' => '4'],
             ['account_name' => 'Fuel For Motorcycle', 'parent_id' => $fuelCNG->id, 'account_level' => '4'],
             
-            // Construction Materials - Level 4
-            ['account_name' => 'Construction Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Cement', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Steel/Rod', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Brick', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Sand', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Stone/Crushed Stone', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Tiles', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Paint', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Electrical Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Plumbing Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
-            ['account_name' => 'Sanitary Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4'],
+            // Construction Materials - Level 4 (BOQ accounts)
+            ['account_name' => 'Construction Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Cement', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Steel/Rod', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Brick', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Sand', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Stone/Crushed Stone', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Tiles', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Paint', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Electrical Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Plumbing Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
+            ['account_name' => 'Sanitary Materials', 'parent_id' => $constructionMaterials->id, 'account_level' => '4', 'is_boq' => true, 'is_requisitions' => true],
             
-            // Labor Costs - Level 4
-            ['account_name' => 'Construction Labor', 'parent_id' => $laborCosts->id, 'account_level' => '4'],
-            ['account_name' => 'Skilled Labor', 'parent_id' => $laborCosts->id, 'account_level' => '4'],
-            ['account_name' => 'Unskilled Labor', 'parent_id' => $laborCosts->id, 'account_level' => '4'],
+            // Labor Costs - Level 4 (BOQ accounts)
+            ['account_name' => 'Construction Labor', 'parent_id' => $laborCosts->id, 'account_level' => '4', 'is_boq' => true],
+            ['account_name' => 'Skilled Labor', 'parent_id' => $laborCosts->id, 'account_level' => '4', 'is_boq' => true],
+            ['account_name' => 'Unskilled Labor', 'parent_id' => $laborCosts->id, 'account_level' => '4', 'is_boq' => true],
             
-            // Contractor Payments - Level 4
-            ['account_name' => 'Contractor Payment', 'parent_id' => $contractorPayments->id, 'account_level' => '4'],
-            ['account_name' => 'Sub-Contractor Payment', 'parent_id' => $contractorPayments->id, 'account_level' => '4'],
+            // Contractor Payments - Level 4 (BOQ accounts)
+            ['account_name' => 'Contractor Payment', 'parent_id' => $contractorPayments->id, 'account_level' => '4', 'is_boq' => true],
+            ['account_name' => 'Sub-Contractor Payment', 'parent_id' => $contractorPayments->id, 'account_level' => '4', 'is_boq' => true],
             
             // Legal & Compliance - Level 4
             ['account_name' => 'Legal Fees', 'parent_id' => $legalCompliance->id, 'account_level' => '4'],
@@ -570,6 +576,9 @@ class ChartOfAccountsSeeder extends Seeder
                 'parent_id' => $account['parent_id'],
                 'account_level' => $account['account_level'],
                 'status' => 'active',
+                'is_requisitions' => isset($account['is_requisitions']) ? $account['is_requisitions'] : false,
+                'is_boq' => isset($account['is_boq']) ? $account['is_boq'] : false,
+                'is_account' => isset($account['is_account']) ? $account['is_account'] : false,
                 'created_by' => 1,
             ]);
         }

@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AttachmentController;
 
 // Real Estate Controllers
-use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\Projects\ProjectController;
 use App\Http\Controllers\Admin\FlatController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\SalesAgentController;
@@ -15,8 +15,10 @@ use App\Http\Controllers\Admin\PaymentScheduleController;
 use App\Http\Controllers\Admin\PaymentReceiveController;
 use App\Http\Controllers\Admin\ChequeManagementController;
 use App\Http\Controllers\Admin\RequisitionController;
+use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ContractorController;
+use App\Http\Controllers\Admin\BoqController;
 use App\Http\Controllers\Admin\PrintControllers\PaymentSchedules\PaymentScheduleController as PrintPaymentScheduleController;
 use App\Http\Controllers\Admin\PrintControllers\PaymentInvoices\PaymentInvoiceController as PrintPaymentInvoiceController;
 
@@ -93,9 +95,12 @@ Route::prefix('payment-schedules')->name('payment-schedules.')->group(function (
 });
 
 // Print Templates routes
+use App\Http\Controllers\Admin\Projects\ProjectFlatsPrintController;
+
 Route::group(['prefix' => 'print-templates'], function() {
     Route::get('/payment-schedule', [PrintPaymentScheduleController::class, 'showPaymentSchedule'])->name('print-templates.payment-schedule');
     Route::get('/payment-invoice', [PrintPaymentInvoiceController::class, 'showPaymentInvoice'])->name('print-templates.payment-invoice');
+    Route::get('/project-flats', [ProjectFlatsPrintController::class, 'showProjectFlats'])->name('print-templates.project-flats');
 });
 
 // Payment Receive Routes
@@ -108,12 +113,23 @@ Route::prefix('cheque-management')->name('cheque-management.')->group(function (
     Route::get('/', [ChequeManagementController::class, 'index'])->name('index');
 });
 
+// BOQ Routes
+Route::prefix('boq')->name('boq.')->group(function () {
+    Route::get('/', [BoqController::class, 'index'])->name('index');
+});
+
 // Requisition Routes
 Route::prefix('requisitions')->name('requisitions.')->group(function () {
     Route::get('/', [RequisitionController::class, 'index'])->name('index');
     Route::get('/confirm', [RequisitionController::class, 'confirm'])->name('confirm');
     Route::post('/{id}/approve', [RequisitionController::class, 'approve'])->name('approve');
     Route::post('/{id}/reject', [RequisitionController::class, 'reject'])->name('reject');
+});
+
+// Purchase Order Routes
+Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+    Route::get('/', [PurchaseOrderController::class, 'index'])->name('index');
+    Route::get('/list', [PurchaseOrderController::class, 'list'])->name('list');
 });
 
 // Account Entry Routes

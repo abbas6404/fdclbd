@@ -44,6 +44,11 @@ class Project extends Model
         return $this->hasMany(Attachment::class, 'project_id');
     }
 
+    public function boqRecords()
+    {
+        return $this->hasMany(BoqRecord::class, 'project_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

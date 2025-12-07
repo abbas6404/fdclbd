@@ -80,7 +80,7 @@ class Index extends Component
         // Load expense accounts that are marked to show in requisition
         $this->account_results = HeadOfAccount::where('account_type', 'expense')
             ->where('status', 'active')
-            ->where('show_in_requisition', true)
+            ->where('is_requisitions', true)
             ->orderBy('account_name', 'asc')
             ->limit(20)
             ->get()
@@ -187,7 +187,7 @@ class Index extends Component
 
         $this->account_results = HeadOfAccount::where('account_type', 'expense')
             ->where('status', 'active')
-            ->where('show_in_requisition', true)
+            ->where('is_requisitions', true)
             ->where('account_name', 'like', "%{$this->account_search}%")
             ->orderBy('account_name', 'asc')
             ->limit(20)

@@ -24,7 +24,9 @@ return new class extends Migration
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active')->index();
-            $table->boolean('show_in_requisition')->default(false)->index(); // Show in requisition dropdown
+            $table->boolean('is_requisitions')->default(false)->index(); // Show in requisition dropdown
+            $table->boolean('is_boq')->default(false)->index(); // Bill of Quantities
+            $table->boolean('is_account')->default(false)->index(); // Account
             $table->string('last_used_unit')->nullable(); // Remember last used unit for this account
             $table->unsignedBigInteger('last_rate')->nullable(); // Remember last used rate for this account (not used in requisitions)
             $table->timestamps();

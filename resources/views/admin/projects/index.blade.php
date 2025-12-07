@@ -3,8 +3,5 @@
 @section('title', 'Projects Management')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Livewire Component -->
-    @livewire('admin.projects.index')
-</div>
+@livewire('admin.projects.index')
 @endsection

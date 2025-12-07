@@ -20,7 +20,9 @@ class HeadOfAccount extends Model
         'parent_id',
         'account_level',
         'status',
-        'show_in_requisition',
+        'is_requisitions',
+        'is_boq',
+        'is_account',
         'last_used_unit',
         'last_rate',
         'created_by',
@@ -30,7 +32,9 @@ class HeadOfAccount extends Model
     protected $casts = [
         'account_type' => 'string',
         'status' => 'string',
-        'show_in_requisition' => 'boolean',
+        'is_requisitions' => 'boolean',
+        'is_boq' => 'boolean',
+        'is_account' => 'boolean',
     ];
 
     /**
@@ -158,7 +162,7 @@ class HeadOfAccount extends Model
      */
     public function scopeShowInRequisition($query)
     {
-        return $query->where('show_in_requisition', true);
+        return $query->where('is_requisitions', true);
     }
 
     /**

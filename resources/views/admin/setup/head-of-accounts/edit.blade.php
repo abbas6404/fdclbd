@@ -130,21 +130,59 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" 
                                    type="checkbox" 
-                                   id="show_in_requisition" 
-                                   name="show_in_requisition" 
+                                   id="is_requisitions" 
+                                   name="is_requisitions" 
                                    value="1"
-                                   {{ old('show_in_requisition', $account->show_in_requisition) ? 'checked' : '' }}>
-                            <label class="form-check-label fw-bold small" for="show_in_requisition">
-                                Show in Requisition
+                                   {{ old('is_requisitions', $account->is_requisitions) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold small" for="is_requisitions">
+                                <i class="fas fa-shopping-cart me-1"></i> Show in Requisition
                             </label>
-                            <small class="form-text text-muted d-block">Check this to display this account in requisition dropdown</small>
+                            <small class="form-text text-muted d-block">Display in requisition dropdown</small>
                         </div>
-                        @error('show_in_requisition')
+                        @error('is_requisitions')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="is_boq" 
+                                   name="is_boq" 
+                                   value="1"
+                                   {{ old('is_boq', $account->is_boq) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold small" for="is_boq">
+                                <i class="fas fa-clipboard-list me-1"></i> Show in BOQ
+                            </label>
+                            <small class="form-text text-muted d-block">Display in BOQ records</small>
+                        </div>
+                        @error('is_boq')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="is_account" 
+                                   name="is_account" 
+                                   value="1"
+                                   {{ old('is_account', $account->is_account) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold small" for="is_account">
+                                <i class="fas fa-book me-1"></i> Show in Account
+                            </label>
+                            <small class="form-text text-muted d-block">Display in account records</small>
+                        </div>
+                        @error('is_account')
                             <div class="text-danger small">{{ $message }}</div>
                         @enderror
                     </div>

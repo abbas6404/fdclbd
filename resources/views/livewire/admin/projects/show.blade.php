@@ -1,4 +1,4 @@
-<div>
+<div class="container-fluid px-2 px-md-3">
     @if($project)
         <!-- Statistics Cards -->
         <div class="row mb-4">
@@ -78,6 +78,12 @@
                         </h5>
                     </div>
                     <div class="col-auto">
+                        <button type="button" 
+                                class="btn btn-outline-secondary btn-sm me-2" 
+                                onclick="printProjectFlats({{ $project->id }})"
+                                title="Print All Flats">
+                            <i class="fas fa-print"></i> Print Flats
+                        </button>
                         <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn btn-primary btn-sm me-2">
                             <i class="fas fa-edit"></i> Edit Project
                         </a>
@@ -469,3 +475,17 @@
         </div>
     @endif
 </div>
+
+<script>
+    function printProjectFlats(projectId) {
+        const printUrl = '{{ route("admin.print-templates.project-flats") }}?project_id=' + projectId;
+        
+        // Use globalPrint function if available, otherwise open in new window
+        if (typeof globalPrint === 'function') {
+            globalPrint(printUrl, { method: 'iframe', autoPrint: true });
+        } else {
+            // Fallback: open in new window
+            window.open(printUrl, '_blank');
+        }
+    }
+</script>

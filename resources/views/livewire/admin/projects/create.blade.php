@@ -1,5 +1,4 @@
-<div class="container-fluid">
-    <!-- Main Card -->
+<div class="container-fluid px-2 px-md-3">
     <div class="card shadow border-0">
         <div class="card-header bg-white py-2">
             <div class="d-flex justify-content-between align-items-center">
@@ -356,5 +355,6 @@
                 </div>
             </form>
         </div>
+    </div>
     </div>
 </div>

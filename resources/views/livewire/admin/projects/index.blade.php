@@ -1,5 +1,4 @@
-<div class="container-fluid">
-    <!-- Main Card -->
+<div class="container-fluid px-2 px-md-3">
     <div class="card shadow border-0">
         <div class="card-header bg-white py-2">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -338,7 +337,7 @@
                     <div class="d-flex align-items-center gap-2">
                         <a href="{{ route('admin.projects.show', $selectedProject->id) }}" 
                            class="btn btn-sm btn-primary" 
-                           target="_blank">
+                           target="_self">
                             <i class="fas fa-external-link-alt me-1"></i> View Full Details
                         </a>
                         <button type="button" class="btn-close" wire:click="closeFlatsModal" aria-label="Close"></button>
@@ -346,7 +345,7 @@
                 </div>
                 <div class="modal-body">
                     <!-- Filter Buttons -->
-                    <div class="mb-3 d-flex gap-2 flex-wrap">
+                    <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
                         <button type="button" 
                                 class="btn btn-sm {{ !$flatStatusFilter ? 'btn-primary' : 'btn-outline-primary' }}" 
                                 wire:click="filterFlatsByStatus(null)">
@@ -372,6 +371,14 @@
                                 wire:click="filterFlatsByStatus('land_owner')">
                             <i class="fas fa-user-tie me-1"></i> Land Owner
                         </button>
+                        <div class="ms-auto">
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-secondary" 
+                                    onclick="printProjectFlats({{ $selectedProject->id }}, '{{ $flatStatusFilter ?? '' }}')"
+                                    title="Print {{ $flatStatusFilter ? ucfirst($flatStatusFilter) : 'All' }} Flats">
+                                <i class="fas fa-print me-1"></i> Print
+                            </button>
+                        </div>
                     </div>
 
                     @if($selectedProject->flats && $selectedProject->flats->count() > 0)
@@ -384,7 +391,8 @@
                                         <th>Floor</th>
                                         <th>Size (sq ft)</th>
                                         <th>Status</th>
-                                        <th>Price/Sqft</th>
+                                        <th>Flat Owner</th>
+                                        <th>Receive Amount</th>
                                         <th>Total Price</th>
                                         <th>Actions</th>
                                     </tr>
@@ -413,8 +421,26 @@
                                                 <span class="badge bg-secondary">{{ ucfirst($flat->status ?? 'N/A') }}</span>
                                             @endif
                                         </td>
-                                        <td>৳{{ number_format($flat->price_per_sqft ?? 0, 2) }}</td>
-                                        <td>৳{{ number_format($flat->total_price ?? 0, 2) }}</td>
+                                        <td>
+                                            @if($flat->flatSales && $flat->flatSales->first() && $flat->flatSales->first()->customer)
+                                                <div class="fw-bold">{{ $flat->flatSales->first()->customer->name }}</div>
+                                                @if($flat->flatSales->first()->customer->phone)
+                                                    <small class="text-muted">{{ $flat->flatSales->first()->customer->phone }}</small>
+                                                @endif
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            ৳{{ number_format($flat->paymentSchedules ? $flat->paymentSchedules->sum('received_amount') : 0, 0) }}
+                                        </td>
+                                        <td>
+                                            @if($flat->status === 'available' && $flat->paymentSchedules && $flat->paymentSchedules->sum('receivable_amount') > 0)
+                                                ৳{{ number_format($flat->paymentSchedules->sum('receivable_amount'), 0) }}
+                                            @else
+                                                ৳0
+                                            @endif
+                                        </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="{{ route('admin.flat.show', $flat->id) }}" 
@@ -427,7 +453,7 @@
                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                @if(Route::has('admin.flat-sales.index'))
+                                                @if($flat->status === 'available' && Route::has('admin.flat-sales.index'))
                                                     <a href="{{ route('admin.flat-sales.index') }}?flat_id={{ $flat->id }}" 
                                                        class="btn btn-outline-success" 
                                                        title="Sales">
@@ -547,6 +573,23 @@
             projectIdToPermanentDelete = projectId;
             const modal = new bootstrap.Modal(document.getElementById('permanentDeleteModal'));
             modal.show();
+        }
+
+        function printProjectFlats(projectId, statusFilter = '') {
+            let printUrl = '{{ route("admin.print-templates.project-flats") }}?project_id=' + projectId;
+            
+            // Add status filter if provided
+            if (statusFilter) {
+                printUrl += '&status=' + statusFilter;
+            }
+            
+            // Use globalPrint function if available, otherwise open in new window
+            if (typeof globalPrint === 'function') {
+                globalPrint(printUrl, { method: 'iframe', autoPrint: true });
+            } else {
+                // Fallback: open in new window
+                window.open(printUrl, '_blank');
+            }
         }
 
         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {

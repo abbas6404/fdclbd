@@ -4,16 +4,17 @@
 
 @section('content')
 @permission('system.dashboard')
-<div class="container-fluid">
-    <!-- Content Row -->
-    <div class="row">
-        <!-- Department Chart -->
-        <div class="col-xl-12 col-lg-12">
-            <div class="card shadow mb-4" style="height: 80vh; background-image: url('{{ asset('images/bg-login.jpg') }}'); background-size: cover; background-position: center; position: relative;">
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(30, 60, 114, 0.3) 0%, rgba(42, 82, 152, 0.4) 50%, rgba(30, 60, 114, 0.3) 100%);"></div>
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 10;">
-                    <h1 class="text-white" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 3.5rem; font-weight: 700; letter-spacing: 2px; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); text-align: center;">
-                        Formonic Design and Construction Ltd.
+<div class="px-2 px-md-3">
+    <div class="row g-0">
+        <div class="col-12">
+            <div class="card shadow border-0 position-relative overflow-hidden rounded" style="height: calc(100vh - 140px); min-height: 400px; background-image: url('{{ asset('images/bg-login.jpg') }}'); background-size: cover; background-position: center;">
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(30, 60, 114, 0.4) 0%, rgba(42, 82, 152, 0.5) 50%, rgba(30, 60, 114, 0.4) 100%);"></div>
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3 p-md-4" style="z-index: 10;">
+                    <h1 class="text-white text-center fw-bold m-0" style="font-size: clamp(1.75rem, 7vw, 4.5rem); letter-spacing: 1px; text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.6); line-height: 1.2;">
+                        <span class="d-block">Formonic</span>
+                        <span class="d-block">Design and</span>
+                        <span class="d-block">Construction</span>
+                        <span class="d-block fw-semibold" style="font-size: clamp(1.25rem, 4vw, 3rem);">Ltd.</span>
                     </h1>
                 </div>
             </div>

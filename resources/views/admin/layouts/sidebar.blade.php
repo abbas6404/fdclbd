@@ -1,10 +1,10 @@
 @permission('system.dashboard')
 <!-- Sidebar -->
 <div class="sidebar">
-    <div class="sidebar-brand p-0" style="background: linear-gradient(135deg,rgba(97, 255, 97, 0.14) 20%,rgba(200, 255, 205, 0.25) 100%); border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;">
-        <div class="sidebar-logo d-flex align-items-center justify-content-center" style="height: 120px;">
+    <div class="sidebar-brand p-0">
+        <div class="sidebar-logo d-flex align-items-center justify-content-center">
             @if(file_exists(public_path('images/logo.png')))
-                <img class="fw-bold px-2" src="{{ asset('images/logo.png') }}" alt="FDCL BD Logo" style="height: 120px; width: auto; margin:auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.20));">
+                <img class="sidebar-logo-img" src="{{ asset('images/logo.png') }}" alt="FDCL BD Logo">
             @else
                 <span class="fw-bold px-2 fs-3 text-white" style="text-shadow: 1px 1px 6px #26c6da;">FDCL BD</span>
             @endif
@@ -58,6 +58,14 @@
                     </li>
                 </ul>
             </div>
+        </li>
+
+        <!-- BOQ -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.boq.*') ? 'active' : '' }}" href="{{ route('admin.boq.index') }}">
+                <i class="fas fa-clipboard-list"></i>
+                <span>BOQ</span>
+            </a>
         </li>
 
         <!-- Project Flat Dropdown -->
@@ -146,6 +154,36 @@
                         <a class="nav-link {{ request()->routeIs('admin.requisitions.confirm') ? 'active' : '' }}" href="{{ route('admin.requisitions.confirm') }}">
                             <i class="fas fa-check-circle"></i>
                             <span>Confirm Requisition</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Purchase Order Dropdown -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.purchase-orders.*') ? 'active' : '' }}" 
+               data-bs-toggle="collapse" 
+               href="#purchaseOrdersSubmenu" 
+               role="button" 
+               aria-expanded="{{ request()->routeIs('admin.purchase-orders.*') ? 'true' : 'false' }}" 
+               aria-controls="purchaseOrdersSubmenu">
+                <i class="fas fa-file-invoice"></i>
+                <span>Purchase Order</span>
+                <i class="fas fa-chevron-down ms-auto"></i>
+            </a>
+            <div class="collapse {{ request()->routeIs('admin.purchase-orders.*') ? 'show' : '' }}" id="purchaseOrdersSubmenu">
+                <ul class="nav flex-column ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.purchase-orders.index') ? 'active' : '' }}" href="{{ route('admin.purchase-orders.index') }}">
+                            <i class="fas fa-plus"></i>
+                            <span>Create Purchase Order</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.purchase-orders.list') ? 'active' : '' }}" href="{{ route('admin.purchase-orders.list') }}">
+                            <i class="fas fa-list"></i>
+                            <span>Purchase Orders List</span>
                         </a>
                     </li>
                 </ul>

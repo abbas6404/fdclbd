@@ -138,7 +138,7 @@ class Index extends Component
                 WHEN status = 'land_owner' THEN 4 
                 ELSE 5 
             END");
-        }])->findOrFail($projectId);
+        }, 'flats.paymentSchedules', 'flats.flatSales.customer'])->findOrFail($projectId);
         $this->showFlatsModal = true;
     }
 
@@ -157,7 +157,7 @@ class Index extends Component
                     WHEN status = 'land_owner' THEN 4 
                     ELSE 5 
                 END");
-            }])->findOrFail($this->selectedProject->id);
+            }, 'flats.paymentSchedules', 'flats.flatSales.customer'])->findOrFail($this->selectedProject->id);
         }
     }
 
