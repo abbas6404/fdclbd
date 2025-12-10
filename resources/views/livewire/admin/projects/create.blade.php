@@ -1,7 +1,7 @@
 <div class="container-fluid px-2 px-md-3">
     <div class="card shadow border-0">
-        <div class="card-header bg-white py-2">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white py-2 px-2 px-md-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <h6 class="card-title mb-0 text-primary">
                     <i class="fas fa-plus-circle me-2"></i> Create New Project
                 </h6>
@@ -10,11 +10,11 @@
                 </a>
             </div>
         </div>
-        <div class="card-body py-3">
+        <div class="card-body py-3 px-2 px-md-3">
             <form wire:submit.prevent="save">
                 <div class="row g-3">
                     <!-- Project Name -->
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label for="project_name" class="form-label small fw-bold">Project Name <span class="text-danger">*</span></label>
                         <input type="text" 
                                class="form-control form-control-sm @error('project_name') is-invalid @enderror" 
@@ -27,7 +27,7 @@
                     </div>
 
                     <!-- Status -->
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label for="status" class="form-label small fw-bold">Status <span class="text-danger">*</span></label>
                         <select class="form-select form-select-sm @error('status') is-invalid @enderror" 
                                 id="status" 
@@ -44,7 +44,7 @@
                     </div>
 
                     <!-- Address and Description in same row -->
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label for="address" class="form-label small fw-bold">Address <span class="text-danger">*</span></label>
                         <textarea class="form-control form-control-sm @error('address') is-invalid @enderror" 
                                   id="address" 
@@ -56,7 +56,7 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label for="description" class="form-label small fw-bold">Description</label>
                         <textarea class="form-control form-control-sm @error('description') is-invalid @enderror" 
                                   id="description" 
@@ -69,7 +69,7 @@
                     </div>
 
                     <!-- Facing -->
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <label for="facing" class="form-label small fw-bold">Facing Direction</label>
                         <select class="form-select form-select-sm @error('facing') is-invalid @enderror" 
                                 id="facing" 
@@ -90,7 +90,7 @@
                     </div>
 
                     <!-- Storey -->
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <label for="storey" class="form-label small fw-bold">Storey</label>
                         <input type="number" 
                                class="form-control form-control-sm @error('storey') is-invalid @enderror" 
@@ -104,7 +104,7 @@
                     </div>
 
                     <!-- Land Area -->
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <label for="land_area" class="form-label small fw-bold">Land Area (sq ft)</label>
                         <input type="number" 
                                class="form-control form-control-sm @error('land_area') is-invalid @enderror" 
@@ -119,7 +119,7 @@
                     </div>
 
                     <!-- Total Floors -->
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <label for="total_floors" class="form-label small fw-bold">Total Floors</label>
                         <input type="number" 
                                class="form-control form-control-sm @error('total_floors') is-invalid @enderror" 
@@ -133,7 +133,7 @@
                     </div>
 
                     <!-- Project Launching Date -->
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label for="project_launching_date" class="form-label small fw-bold">Project Launching Date</label>
                         <input type="date" 
                                class="form-control form-control-sm @error('project_launching_date') is-invalid @enderror" 
@@ -145,7 +145,7 @@
                     </div>
 
                     <!-- Project Hand Over Date -->
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label for="project_hand_over_date" class="form-label small fw-bold">Project Hand Over Date</label>
                         <input type="date" 
                                class="form-control form-control-sm @error('project_hand_over_date') is-invalid @enderror" 
@@ -160,7 +160,7 @@
                     <div class="col-12 mt-3">
                         <div class="row">
                             <!-- Left Side: Land Owner Information -->
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4 mb-3 mb-md-0">
                                 <h6 class="text-primary border-bottom pb-2 mb-3">
                                     <i class="fas fa-user-tie me-2"></i>Land Owner Information
                                 </h6>
@@ -206,8 +206,8 @@
                             </div>
 
                             <!-- Right Side: Attachments -->
-                            <div class="col-md-8">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="col-12 col-md-8">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
                                     <h6 class="text-primary border-bottom pb-2 mb-0">
                                         <i class="fas fa-paperclip me-2"></i>Document Soft Copy
                                     </h6>
@@ -246,10 +246,10 @@
                                         <div class="card mb-2 border">
                                             <div class="card-body p-2">
                                                 <div class="row g-2 align-items-end">
-                                                    <div class="col-auto text-center" style="width: 30px;">
+                                                    <div class="col-auto text-center d-none d-md-block" style="width: 30px;">
                                                         <span class="text-muted">{{ $loop->iteration }}.</span>
                                                     </div>
-                                                    <div class="col-md-5">
+                                                    <div class="col-12 col-md-5">
                                                         <label class="form-label small fw-bold">Document Name</label>
                                                         <input type="text" 
                                                                class="form-control form-control-sm @error('attachments.'.$index.'.document_name') is-invalid @enderror" 
@@ -259,7 +259,7 @@
                                                             <div class="invalid-feedback">{{ $message }}</div>
                                                         @enderror
                                                     </div>
-                                                    <div class="col-md-5">
+                                                    <div class="col-12 col-md-5">
                                                         <label class="form-label small fw-bold">File (Image/PDF)</label>
                                                         <input type="file" 
                                                                class="form-control form-control-sm @error('attachments.'.$index.'.file') is-invalid @enderror" 
@@ -275,7 +275,7 @@
                                                             </small>
                                                         @endif
                                                     </div>
-                                                    <div class="col-md-1 d-flex align-items-end">
+                                                    <div class="col-12 col-md-1 d-flex align-items-end justify-content-end justify-content-md-start">
                                                         <button type="button" 
                                                                 class="btn btn-xs btn-outline-danger" 
                                                                 wire:click="removeAttachment({{ $index }})"
@@ -333,14 +333,14 @@
                 <!-- Form Actions -->
                 <div class="row mt-4 pt-3 border-top">
                     <div class="col-12">
-                        <div class="d-flex justify-content-end gap-2">
+                        <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
                             <button type="button" 
-                                    class="btn btn-sm btn-outline-secondary" 
+                                    class="btn btn-sm btn-outline-secondary order-2 order-md-1" 
                                     wire:click="cancel">
                                 <i class="fas fa-times me-1"></i> Cancel
                             </button>
                             <button type="submit" 
-                                    class="btn btn-sm btn-primary" 
+                                    class="btn btn-sm btn-primary order-1 order-md-2 flex-fill flex-md-grow-0" 
                                     wire:loading.attr="disabled"
                                     wire:target="save">
                                 <span wire:loading.remove wire:target="save">
@@ -355,6 +355,5 @@
                 </div>
             </form>
         </div>
-    </div>
     </div>
 </div>

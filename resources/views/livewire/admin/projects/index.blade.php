@@ -1,19 +1,19 @@
 <div class="container-fluid px-2 px-md-3">
     <div class="card shadow border-0">
-        <div class="card-header bg-white py-2">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="card-header bg-white py-2 px-2 px-md-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <h6 class="card-title mb-0 text-primary">
                     <i class="fas fa-building me-2"></i> All Projects
                 </h6>
-                <div class="d-flex gap-2">
-                        <button type="button" 
-                            class="btn btn-sm {{ $showArchived ? 'btn-success' : 'btn-outline-warning' }}"
-                            wire:click="toggleArchive"
-                            title="{{ $showArchived ? 'Show Active Projects' : 'Show Archived Projects' }}">
+                <div class="d-flex gap-2 flex-fill flex-md-grow-0 ms-md-auto">
+                    <button type="button" 
+                        class="btn btn-sm {{ $showArchived ? 'btn-success' : 'btn-outline-warning' }} flex-fill flex-md-grow-0"
+                        wire:click="toggleArchive"
+                        title="{{ $showArchived ? 'Show Active Projects' : 'Show Archived Projects' }}">
                         <i class="fas fa-archive me-1"></i> {{ $showArchived ? 'Active' : 'Archive' }}
-                        </button>
-                    <a href="{{ route('admin.projects.create') }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus me-1"></i> Add New Project
+                    </button>
+                    <a href="{{ route('admin.projects.create') }}" class="btn btn-sm btn-primary flex-fill flex-md-grow-0">
+                        <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">Add New</span><span class="d-sm-none">Add</span>
                     </a>
                 </div>
             </div>
@@ -21,7 +21,7 @@
         <div class="card-body py-3">
             <!-- Filters -->
             <div class="row mb-3 g-2">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <select class="form-select form-select-sm" wire:model.live="statusFilter">
                         <option value="">All Status</option>
                         <option value="upcoming">Upcoming</option>
@@ -31,7 +31,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <select class="form-select form-select-sm" wire:model.live="facingFilter">
                         <option value="">All Facing</option>
                         <option value="North">North</option>
@@ -44,14 +44,14 @@
                         <option value="South-West">South-West</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="input-group">
                         <span class="input-group-text bg-light">
                             <i class="fas fa-search text-muted"></i>
                         </span>
                         <input type="text" 
                                class="form-control form-control-sm" 
-                               placeholder="Search by name, description, address, land area, land owner name/NID/phone..." 
+                               placeholder="Search projects..." 
                                wire:model.live.debounce.300ms="search">
                     </div>
                 </div>
@@ -62,15 +62,15 @@
             <div class="card border mb-3 animate-fade-in">
                 <div class="card-body py-2">
                     <div class="row g-2">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold">From Date</label>
                             <input type="date" class="form-control form-control-sm" wire:model.live="dateFrom">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold">To Date</label>
                             <input type="date" class="form-control form-control-sm" wire:model.live="dateTo">
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
+                        <div class="col-12 col-md-4 d-flex align-items-end">
                             <button type="button" class="btn btn-sm btn-outline-secondary w-100" wire:click="$set('dateFrom', ''); $set('dateTo', '')">
                                 <i class="fas fa-times me-1"></i> Clear Dates
                             </button>
@@ -81,8 +81,8 @@
             @endif
 
             <!-- Table View -->
-            <div class="table-responsive">
-                <table class="table table-hover table-sm align-middle">
+            <div class="table-responsive" style="max-height: calc(100vh - 200px); overflow-y: auto; overflow-x: auto;">
+                <table class="table table-hover table-sm align-middle mb-0" style="min-width: 1200px;">
                     <thead class="table-light">
                         <tr>
                             <th wire:click="sortBy('id')" style="cursor: pointer;" class="user-select-none">
@@ -309,9 +309,12 @@
             </div>
 
             <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                <div class="text-muted small">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 pt-3 border-top gap-2">
+                <div class="text-muted small d-none d-md-block">
                     Showing <strong>{{ $projects->firstItem() ?? 0 }}</strong> to <strong>{{ $projects->lastItem() ?? 0 }}</strong> of <strong>{{ $projects->total() }}</strong> results
+                </div>
+                <div class="text-muted small d-md-none text-center">
+                    <strong>{{ $projects->total() }}</strong> total results
                 </div>
                 <div>
                     {{ $projects->links() }}
@@ -323,55 +326,57 @@
     <!-- Project Flats Modal -->
     @if($showFlatsModal && $selectedProject)
     <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1" wire:ignore.self>
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-building me-2"></i>{{ $selectedProject->project_name }} - 
+                <div class="modal-header flex-column flex-md-row gap-2">
+                    <h5 class="modal-title mb-0">
+                        <i class="fas fa-building me-2"></i><span class="d-none d-sm-inline">{{ $selectedProject->project_name }} - </span>
                         @if($flatStatusFilter)
-                            {{ ucfirst($flatStatusFilter) }} Flats
+                            {{ ucfirst($flatStatusFilter) }} <span class="d-none d-sm-inline">Flats</span>
                         @else
-                            All Flats
+                            <span class="d-none d-sm-inline">All </span>Flats
                         @endif
                     </h5>
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 w-100 w-md-auto">
                         <a href="{{ route('admin.projects.show', $selectedProject->id) }}" 
-                           class="btn btn-sm btn-primary" 
+                           class="btn btn-sm btn-primary flex-fill flex-md-grow-0" 
                            target="_self">
-                            <i class="fas fa-external-link-alt me-1"></i> View Full Details
+                            <i class="fas fa-external-link-alt me-1"></i> <span class="d-none d-sm-inline">View Details</span><span class="d-sm-none">Details</span>
                         </a>
-                        <button type="button" class="btn-close" wire:click="closeFlatsModal" aria-label="Close"></button>
+                        <button type="button" class="btn-close flex-shrink-0" wire:click="closeFlatsModal" aria-label="Close"></button>
                     </div>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: calc(100vh - 150px); overflow-y: auto;">
                     <!-- Filter Buttons -->
-                    <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-                        <button type="button" 
-                                class="btn btn-sm {{ !$flatStatusFilter ? 'btn-primary' : 'btn-outline-primary' }}" 
-                                wire:click="filterFlatsByStatus(null)">
-                            <i class="fas fa-list me-1"></i> All Flats
-                        </button>
-                        <button type="button" 
-                                class="btn btn-sm {{ $flatStatusFilter === 'available' ? 'btn-success' : 'btn-outline-success' }}" 
-                                wire:click="filterFlatsByStatus('available')">
-                            <i class="fas fa-check-circle me-1"></i> Available
-                        </button>
-                        <button type="button" 
-                                class="btn btn-sm {{ $flatStatusFilter === 'sold' ? 'btn-danger' : 'btn-outline-danger' }}" 
-                                wire:click="filterFlatsByStatus('sold')">
-                            <i class="fas fa-tag me-1"></i> Sold
-                        </button>
-                        <button type="button" 
-                                class="btn btn-sm {{ $flatStatusFilter === 'reserved' ? 'btn-warning' : 'btn-outline-warning' }}" 
-                                wire:click="filterFlatsByStatus('reserved')">
-                            <i class="fas fa-bookmark me-1"></i> Reserved
-                        </button>
-                        <button type="button" 
-                                class="btn btn-sm {{ $flatStatusFilter === 'land_owner' ? 'btn-secondary' : 'btn-outline-secondary' }}" 
-                                wire:click="filterFlatsByStatus('land_owner')">
-                            <i class="fas fa-user-tie me-1"></i> Land Owner
-                        </button>
-                        <div class="ms-auto">
+                    <div class="mb-3">
+                        <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
+                            <button type="button" 
+                                    class="btn btn-sm {{ !$flatStatusFilter ? 'btn-primary' : 'btn-outline-primary' }} flex-fill flex-md-grow-0" 
+                                    wire:click="filterFlatsByStatus(null)">
+                                <i class="fas fa-list me-1"></i> <span class="d-none d-sm-inline">All </span>Flats
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-sm {{ $flatStatusFilter === 'available' ? 'btn-success' : 'btn-outline-success' }} flex-fill flex-md-grow-0" 
+                                    wire:click="filterFlatsByStatus('available')">
+                                <i class="fas fa-check-circle me-1"></i> <span class="d-none d-sm-inline">Available</span><span class="d-sm-none">Avl</span>
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-sm {{ $flatStatusFilter === 'sold' ? 'btn-danger' : 'btn-outline-danger' }} flex-fill flex-md-grow-0" 
+                                    wire:click="filterFlatsByStatus('sold')">
+                                <i class="fas fa-tag me-1"></i> Sold
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-sm {{ $flatStatusFilter === 'reserved' ? 'btn-warning' : 'btn-outline-warning' }} flex-fill flex-md-grow-0" 
+                                    wire:click="filterFlatsByStatus('reserved')">
+                                <i class="fas fa-bookmark me-1"></i> <span class="d-none d-sm-inline">Reserved</span><span class="d-sm-none">Res</span>
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-sm {{ $flatStatusFilter === 'land_owner' ? 'btn-secondary' : 'btn-outline-secondary' }} flex-fill flex-md-grow-0" 
+                                    wire:click="filterFlatsByStatus('land_owner')">
+                                <i class="fas fa-user-tie me-1"></i> <span class="d-none d-md-inline">Land Owner</span><span class="d-md-none">L.Owner</span>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-end">
                             <button type="button" 
                                     class="btn btn-sm btn-outline-secondary" 
                                     onclick="printProjectFlats({{ $selectedProject->id }}, '{{ $flatStatusFilter ?? '' }}')"
@@ -382,8 +387,8 @@
                     </div>
 
                     @if($selectedProject->flats && $selectedProject->flats->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover table-sm">
+                        <div class="table-responsive" style="max-height: calc(100vh ); overflow-y: auto; overflow-x: auto;">
+                            <table class="table table-striped table-hover table-sm mb-0" style="min-width: 1000px;">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Flat Number</th>
@@ -556,6 +561,42 @@
         }
         .animate-fade-in {
             animation: fadeIn 0.3s ease-in;
+        }
+        .table-responsive {
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-responsive table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        @media (max-width: 768px) {
+            .table-responsive {
+                max-height: calc(100vh - 220px) !important;
+            }
+            .card-body {
+                padding: 0.75rem;
+            }
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            .modal-xl {
+                max-width: 95vw;
+            }
+            .modal-body {
+                padding: 0.75rem !important;
+            }
+            .card-header {
+                padding: 0.5rem !important;
+            }
+            .card-header h6 {
+                font-size: 0.9rem;
+            }
+            .btn-sm {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.75rem;
+            }
         }
     </style>
 

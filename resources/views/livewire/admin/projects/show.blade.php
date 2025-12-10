@@ -1,55 +1,55 @@
 <div class="container-fluid px-2 px-md-3">
     @if($project)
         <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
+        <div class="row mb-4 g-2">
+            <div class="col-6 col-md-3">
                 <div class="card bg-primary text-white">
-                    <div class="card-body">
+                    <div class="card-body p-2 p-md-3">
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h4 class="mb-0">{{ $project->flats->count() }}</h4>
-                                <p class="mb-0">Total Flats</p>
+                                <p class="mb-0 small">Total Flats</p>
                             </div>
-                            <div class="align-self-center">
+                            <div class="align-self-center d-none d-md-block">
                                 <i class="fas fa-home fa-2x"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card bg-success text-white">
-                    <div class="card-body">
+                    <div class="card-body p-2 p-md-3">
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h4 class="mb-0">{{ $project->total_units ?? 'N/A' }}</h4>
-                                <p class="mb-0">Total Units</p>
+                                <p class="mb-0 small">Total Units</p>
                             </div>
-                            <div class="align-self-center">
+                            <div class="align-self-center d-none d-md-block">
                                 <i class="fas fa-building fa-2x"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card bg-info text-white">
-                    <div class="card-body">
+                    <div class="card-body p-2 p-md-3">
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h4 class="mb-0">{{ $project->total_floors ?? 'N/A' }}</h4>
-                                <p class="mb-0">Total Floors</p>
+                                <p class="mb-0 small">Total Floors</p>
                             </div>
-                            <div class="align-self-center">
+                            <div class="align-self-center d-none d-md-block">
                                 <i class="fas fa-layer-group fa-2x"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card bg-warning text-white">
-                    <div class="card-body">
+                    <div class="card-body p-2 p-md-3">
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h4 class="mb-0">
@@ -57,9 +57,9 @@
                                         {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                                     </span>
                                 </h4>
-                                <p class="mb-0">Status</p>
+                                <p class="mb-0 small">Status</p>
                             </div>
-                            <div class="align-self-center">
+                            <div class="align-self-center d-none d-md-block">
                                 <i class="fas fa-info-circle fa-2x"></i>
                             </div>
                         </div>
@@ -70,33 +70,35 @@
 
         <!-- Main Project Details Card -->
         <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header px-2 px-md-3 py-2">
                 <div class="row align-items-center">
-                    <div class="col">
+                    <div class="col-12 col-md mb-2 mb-md-0">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-building me-2"></i>Project Details
                         </h5>
                     </div>
-                    <div class="col-auto">
-                        <button type="button" 
-                                class="btn btn-outline-secondary btn-sm me-2" 
-                                onclick="printProjectFlats({{ $project->id }})"
-                                title="Print All Flats">
-                            <i class="fas fa-print"></i> Print Flats
-                        </button>
-                        <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn btn-primary btn-sm me-2">
-                            <i class="fas fa-edit"></i> Edit Project
-                        </a>
-                        <a href="{{ route('admin.projects.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back to Projects
-                        </a>
+                    <div class="col-12 col-md-auto">
+                        <div class="d-flex flex-column flex-md-row gap-2">
+                            <button type="button" 
+                                    class="btn btn-outline-secondary btn-sm" 
+                                    onclick="printProjectFlats({{ $project->id }})"
+                                    title="Print All Flats">
+                                <i class="fas fa-print"></i> <span class="d-none d-sm-inline">Print Flats</span><span class="d-sm-none">Print</span>
+                            </button>
+                            <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit"></i> <span class="d-none d-sm-inline">Edit Project</span><span class="d-sm-none">Edit</span>
+                            </a>
+                            <a href="{{ route('admin.projects.index') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> <span class="d-none d-sm-inline">Back to Projects</span><span class="d-sm-none">Back</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body px-2 px-md-3">
                 <div class="row">
                     <!-- Left Column - Basic Information -->
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
                         <h6 class="text-primary mb-3 border-bottom pb-2">
                             <i class="fas fa-info-circle me-2"></i>Basic Information
                         </h6>
@@ -133,14 +135,14 @@
                     </div>
 
                     <!-- Right Column - Project Specifications -->
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <h6 class="text-primary mb-3 border-bottom pb-2">
                             <i class="fas fa-cogs me-2"></i>Project Specifications
                         </h6>
 
                         <div class="row">
                             @if($project->total_units)
-                            <div class="col-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
                                     <i class="fas fa-building me-1"></i>Total Units
                                 </label>
@@ -149,7 +151,7 @@
                             @endif
 
                             @if($project->total_floors)
-                            <div class="col-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
                                     <i class="fas fa-layer-group me-1"></i>Total Floors
                                 </label>
@@ -158,7 +160,7 @@
                             @endif
 
                             @if($project->land_area)
-                            <div class="col-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
                                     <i class="fas fa-ruler-combined me-1"></i>Land Area
                                 </label>
@@ -167,7 +169,7 @@
                             @endif
 
                             @if($project->storey)
-                            <div class="col-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
                                     <i class="fas fa-layer-group me-1"></i>Storey
                                 </label>
@@ -176,7 +178,7 @@
                             @endif
 
                             @if($project->facing)
-                            <div class="col-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
                                     <i class="fas fa-compass me-1"></i>Facing
                                 </label>
@@ -185,7 +187,7 @@
                             @endif
 
                             @if($project->project_launching_date)
-                            <div class="col-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
                                     <i class="fas fa-calendar-alt me-1"></i>Launch Date
                                 </label>
@@ -196,7 +198,7 @@
                             @endif
 
                             @if($project->project_hand_over_date)
-                            <div class="col-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold small text-muted mb-1">
                                     <i class="fas fa-calendar-check me-1"></i>Hand Over Date
                                 </label>
@@ -218,19 +220,19 @@
                         </h6>
                     </div>
                     @if($project->land_owner_name)
-                    <div class="col-md-4 mb-3">
+                    <div class="col-12 col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted mb-1">Land Owner Name</label>
                         <div class="form-control-plaintext fw-semibold">{{ $project->land_owner_name }}</div>
                     </div>
                     @endif
                     @if($project->land_owner_nid)
-                    <div class="col-md-4 mb-3">
+                    <div class="col-12 col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted mb-1">Land Owner NID</label>
                         <div class="form-control-plaintext fw-semibold">{{ $project->land_owner_nid }}</div>
                     </div>
                     @endif
                     @if($project->land_owner_phone)
-                    <div class="col-md-4 mb-3">
+                    <div class="col-12 col-md-4 mb-3">
                         <label class="form-label fw-bold small text-muted mb-1">Land Owner Phone</label>
                         <div class="form-control-plaintext fw-semibold">{{ $project->land_owner_phone }}</div>
                     </div>
@@ -249,10 +251,10 @@
                         <div class="card mb-2 border">
                             <div class="card-body p-2">
                                 <div class="row g-2 align-items-center">
-                                    <div class="col-auto text-center" style="width: 30px;">
+                                    <div class="col-auto text-center d-none d-md-block" style="width: 30px;">
                                         <span class="text-muted">{{ $loop->iteration }}.</span>
                                     </div>
-                                    <div class="col">
+                                    <div class="col-12 col-md">
                                         <div class="d-flex align-items-center">
                                             @if(in_array(strtolower(pathinfo($attachment->file_path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
                                                 <i class="fas fa-image fa-lg text-primary me-2"></i>
@@ -264,12 +266,12 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-2 text-end">
+                                    <div class="col-12 col-md-auto d-flex justify-content-end">
                                         <a href="{{ route('admin.documents.show', $attachment->id) }}" 
                                            target="_blank" 
-                                           class="btn btn-xs btn-outline-info me-1"
+                                           class="btn btn-xs btn-outline-info"
                                            title="View">
-                                            <i class="fas fa-eye" style="font-size: 0.75rem;"></i>
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i> View
                                         </a>
                                     </div>
                                 </div>
@@ -284,7 +286,7 @@
                 @if(!empty($deletedAttachments))
                     <div class="row mt-4 pt-3 border-top">
                         <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2 gap-2">
                                 <h6 class="text-muted mb-0">
                                     <i class="fas fa-archive me-2"></i>Deleted Documents (Archive)
                                 </h6>
@@ -301,10 +303,10 @@
                                     <div class="card mb-2 border" style="opacity: 0.7; background-color: #f8f9fa;">
                                         <div class="card-body p-2">
                                             <div class="row g-2 align-items-center">
-                                                <div class="col-auto text-center" style="width: 30px;">
+                                                <div class="col-auto text-center d-none d-md-block" style="width: 30px;">
                                                     <span class="text-muted">{{ $loop->iteration }}.</span>
                                                 </div>
-                                                <div class="col">
+                                                <div class="col-12 col-md">
                                                     <div class="d-flex align-items-center">
                                                         @if(in_array(strtolower(pathinfo($deletedAttachment['file_path'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
                                                             <i class="fas fa-image fa-lg text-muted me-2"></i>
@@ -321,12 +323,12 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-2 text-end">
+                                                <div class="col-12 col-md-auto d-flex justify-content-end">
                                                     <a href="{{ route('admin.documents.show', $deletedAttachment['id']) }}" 
                                                        target="_blank" 
                                                        class="btn btn-xs btn-outline-info"
                                                        title="View">
-                                                        <i class="fas fa-eye" style="font-size: 0.75rem;"></i>
+                                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i> View
                                                     </a>
                                                 </div>
                                             </div>
@@ -340,7 +342,7 @@
 
                 <!-- Additional Information -->
                 <div class="row mt-4 pt-3 border-top">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
                         <h6 class="text-muted mb-3">
                             <i class="fas fa-user me-2"></i>Created By
                         </h6>
@@ -355,7 +357,7 @@
                             @endif
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <h6 class="text-muted mb-3">
                             <i class="fas fa-user-edit me-2"></i>Last Updated By
                         </h6>
@@ -376,23 +378,24 @@
 
         <!-- Flats List Card -->
         <div class="card">
-            <div class="card-header">
+            <div class="card-header px-2 px-md-3 py-2">
                 <div class="row align-items-center">
-                    <div class="col">
+                    <div class="col-12 col-md mb-2 mb-md-0">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-home me-2"></i>Project Flats ({{ $project->flats->count() }})
                         </h5>
                     </div>
-                    <div class="col-auto">
-                        <a href="{{ route('admin.flat.create') }}?project_id={{ $project->id }}" class="btn btn-primary btn-sm">
+                    <div class="col-12 col-md-auto">
+                        <a href="{{ route('admin.flat.create') }}?project_id={{ $project->id }}" class="btn btn-primary btn-sm w-100 w-md-auto">
                             <i class="fas fa-plus"></i> Add Flat
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body px-2 px-md-3">
                 @if($project->flats->count() > 0)
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="max-height: calc(100vh - 300px); overflow-y: auto; overflow-x: auto;">
+                        <table class="table table-striped table-hover mb-0" style="min-width: 800px;">
                         <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
@@ -489,3 +492,34 @@
         }
     }
 </script>
+
+<style>
+    @media (max-width: 768px) {
+        .table-responsive {
+            max-height: calc(100vh - 250px) !important;
+        }
+        .card-body {
+            padding: 0.75rem !important;
+        }
+        .card-header {
+            padding: 0.5rem !important;
+        }
+        .card-header h5,
+        .card-header .card-title {
+            font-size: 0.9rem;
+        }
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.75rem;
+        }
+    }
+    .table-responsive {
+        position: relative;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-responsive table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+</style>
