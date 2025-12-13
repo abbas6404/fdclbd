@@ -167,6 +167,13 @@ class PermissionSeeder extends Seeder
             'setup.system-settings.delete' => ['group' => 'Setup System Settings', 'type' => 'delete'],
             'setup.system-settings.restore' => ['group' => 'Setup System Settings', 'type' => 'restore'],
             'setup.system-settings.delete.permanent' => ['group' => 'Setup System Settings', 'type' => 'delete_permanent'],
+
+            // Setup Management Permissions - Approval Levels
+            'setup.approval-levels' => ['group' => 'Setup Approval Levels', 'type' => 'menu'],
+            'setup.approval-levels.view' => ['group' => 'Setup Approval Levels', 'type' => 'view'],
+            'setup.approval-levels.create' => ['group' => 'Setup Approval Levels', 'type' => 'create'],
+            'setup.approval-levels.edit' => ['group' => 'Setup Approval Levels', 'type' => 'edit'],
+            'setup.approval-levels.delete' => ['group' => 'Setup Approval Levels', 'type' => 'delete'],
         ];
 
         // Create groups dynamically and assign permissions

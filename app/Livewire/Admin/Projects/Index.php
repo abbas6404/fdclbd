@@ -37,6 +37,10 @@ class Index extends Component
     public $document_attachments = [];
     public $existing_attachments = [];
 
+    // Delete confirmation properties
+    public $projectIdToDelete = null;
+    public $projectIdToPermanentDelete = null;
+
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
@@ -70,17 +74,31 @@ class Index extends Component
         }
     }
 
-    public function deleteProject($projectId)
+    public function confirmDelete($projectId)
     {
+        $this->projectIdToDelete = $projectId;
+        $this->dispatch('open-delete-modal');
+    }
+
+    public function deleteProject()
+    {
+        if (!$this->projectIdToDelete) {
+            return;
+        }
+
         try {
-            $project = Project::findOrFail($projectId);
+            $project = Project::findOrFail($this->projectIdToDelete);
             $project->delete();
             
+            $this->projectIdToDelete = null;
+            $this->dispatch('close-delete-modal');
             $this->dispatch('show-alert', [
                 'type' => 'success',
                 'message' => 'Project deleted successfully!'
             ]);
         } catch (\Exception $e) {
+            $this->projectIdToDelete = null;
+            $this->dispatch('close-delete-modal');
             $this->dispatch('show-alert', [
                 'type' => 'error',
                 'message' => 'Error deleting project: ' . $e->getMessage()
@@ -106,22 +124,46 @@ class Index extends Component
         }
     }
 
-    public function permanentDeleteProject($projectId)
+    public function confirmPermanentDelete($projectId)
     {
+        $this->projectIdToPermanentDelete = $projectId;
+        $this->dispatch('open-permanent-delete-modal');
+    }
+
+    public function permanentDeleteProject()
+    {
+        if (!$this->projectIdToPermanentDelete) {
+            return;
+        }
+
         try {
-            $project = Project::withTrashed()->findOrFail($projectId);
+            $project = Project::withTrashed()->findOrFail($this->projectIdToPermanentDelete);
             $project->forceDelete();
             
+            $this->projectIdToPermanentDelete = null;
+            $this->dispatch('close-permanent-delete-modal');
             $this->dispatch('show-alert', [
                 'type' => 'success',
                 'message' => 'Project permanently deleted!'
             ]);
         } catch (\Exception $e) {
+            $this->projectIdToPermanentDelete = null;
+            $this->dispatch('close-permanent-delete-modal');
             $this->dispatch('show-alert', [
                 'type' => 'error',
                 'message' => 'Error permanently deleting project: ' . $e->getMessage()
             ]);
         }
+    }
+
+    public function printProjectFlats($projectId, $statusFilter = '')
+    {
+        $printUrl = route('admin.print-templates.project-flats', ['project_id' => $projectId]);
+        if ($statusFilter) {
+            $printUrl .= '&status=' . $statusFilter;
+        }
+        
+        $this->dispatch('print-project-flats', url: $printUrl);
     }
 
     public function showProjectFlats($projectId, $status = null)

@@ -39,10 +39,10 @@
                 </div>
                 <div class="col-auto">
                     <button type="button" 
-                            class="btn btn-sm btn-outline-danger" 
-                            wire:click="clearProject"
-                            title="Clear Project">
-                        <i class="fas fa-times"></i>
+                            class="btn btn-sm btn-outline-primary" 
+                            wire:click="printBoq"
+                            title="Print BOQ">
+                        <i class="fas fa-print me-1"></i> Print
                     </button>
                 </div>
                 @else
@@ -443,6 +443,19 @@
         transition: all 0.2s ease;
     }
     </style>
+
+    @script
+    <script>
+        $wire.on('print-boq', (event) => {
+            const printUrl = event.url;
+            if (typeof globalPrint === 'function') {
+                globalPrint(printUrl, { method: 'iframe', autoPrint: true });
+            } else {
+                window.open(printUrl, '_blank');
+            }
+        });
+    </script>
+    @endscript
 
     <!-- Change History Modal -->
     @if($show_history_modal)

@@ -96,11 +96,13 @@ Route::prefix('payment-schedules')->name('payment-schedules.')->group(function (
 
 // Print Templates routes
 use App\Http\Controllers\Admin\Projects\ProjectFlatsPrintController;
+use App\Http\Controllers\Admin\PrintControllers\Boq\BoqPrintController;
 
 Route::group(['prefix' => 'print-templates'], function() {
     Route::get('/payment-schedule', [PrintPaymentScheduleController::class, 'showPaymentSchedule'])->name('print-templates.payment-schedule');
     Route::get('/payment-invoice', [PrintPaymentInvoiceController::class, 'showPaymentInvoice'])->name('print-templates.payment-invoice');
     Route::get('/project-flats', [ProjectFlatsPrintController::class, 'showProjectFlats'])->name('print-templates.project-flats');
+    Route::get('/boq', [BoqPrintController::class, 'showBoq'])->name('print-templates.boq');
 });
 
 // Payment Receive Routes
@@ -267,6 +269,7 @@ use App\Http\Controllers\Admin\Setup\HeadOfAccountsController;
 use App\Http\Controllers\Admin\Setup\TreasuryAccountsController;
 use App\Http\Controllers\Admin\Setup\SystemSettingsController;
 use App\Http\Controllers\Admin\Setup\RoleController;
+use App\Http\Controllers\Admin\Setup\ApprovalLevelController;
 
 Route::prefix('setup')->name('setup.')->group(function () {
     // Main setup page
@@ -312,5 +315,10 @@ Route::prefix('setup')->name('setup.')->group(function () {
     // System Settings
     Route::prefix('system-settings')->name('system-settings.')->group(function () {
         Route::get('/', [SystemSettingsController::class, 'index'])->name('index');
+    });
+    
+    // Approval Levels
+    Route::prefix('approval-levels')->name('approval-levels.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\Setup\ApprovalLevelController::class, 'index'])->name('index');
     });
 }); 

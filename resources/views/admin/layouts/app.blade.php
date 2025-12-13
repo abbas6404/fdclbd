@@ -22,10 +22,10 @@
 
     <!-- Custom styles -->
     <link href="{{ asset('css/admin-layout.css') }}" rel="stylesheet">
-    
-    @livewireStyles
-    @yield('styles')
-    @stack('styles')
+        
+        @livewireStyles
+        @yield('styles')
+        @stack('styles')
 </head>
 
 <body>
@@ -53,7 +53,7 @@
             @include('admin.layouts.footer')
         </div>
     </div>
-
+    
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -91,25 +91,25 @@
     <script>
         function showAlert(type, message) {
             const isSuccess = type === 'success';
-            Swal.fire({
-                icon: type,
-                html: message,
-                position: 'center',
+                Swal.fire({
+                    icon: type,
+                    html: message,
+                    position: 'center',
                 showConfirmButton: !isSuccess,
                 timer: isSuccess ? 5000 : null,
                 timerProgressBar: isSuccess,
-                allowOutsideClick: true,
-                allowEscapeKey: true,
+                    allowOutsideClick: true,
+                    allowEscapeKey: true,
                 confirmButtonColor: '#4361ee',
-                customClass: {
-                    icon: 'swal2-icon-large',
-                    popup: 'swal2-popup-with-icon'
-                },
+                    customClass: {
+                        icon: 'swal2-icon-large',
+                        popup: 'swal2-popup-with-icon'
+                    },
                 didOpen: isSuccess ? (toast) => {
                     toast.addEventListener('mouseenter', Swal.stopTimer);
                     toast.addEventListener('mouseleave', Swal.resumeTimer);
                 } : undefined
-            });
+                });
         }
 
         // Livewire Alert Handler

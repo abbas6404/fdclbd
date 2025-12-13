@@ -265,7 +265,7 @@
                                             <li>
                                                 <a class="dropdown-item text-danger" 
                                                    href="javascript:void(0)" 
-                                                   onclick="confirmDelete({{ $project->id }})">
+                                                   wire:click="confirmDelete({{ $project->id }})">
                                                     <i class="fas fa-trash me-2"></i> Delete
                                                 </a>
                                             </li>
@@ -282,7 +282,7 @@
                                             <li>
                                                 <a class="dropdown-item text-danger" 
                                                    href="javascript:void(0)" 
-                                                   onclick="confirmPermanentDelete({{ $project->id }})">
+                                                   wire:click="confirmPermanentDelete({{ $project->id }})">
                                                     <i class="fas fa-trash-alt me-2"></i> Permanently Delete
                                                 </a>
                                             </li>
@@ -379,7 +379,7 @@
                         <div class="d-flex justify-content-end">
                             <button type="button" 
                                     class="btn btn-sm btn-outline-secondary" 
-                                    onclick="printProjectFlats({{ $selectedProject->id }}, '{{ $flatStatusFilter ?? '' }}')"
+                                    wire:click="printProjectFlats({{ $selectedProject->id }}, '{{ $flatStatusFilter ?? '' }}')"
                                     title="Print {{ $flatStatusFilter ? ucfirst($flatStatusFilter) : 'All' }} Flats">
                                 <i class="fas fa-print me-1"></i> Print
                             </button>
@@ -514,7 +514,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                    <button type="button" class="btn btn-danger" wire:click="deleteProject" id="confirmDeleteBtn">Delete</button>
                 </div>
             </div>
         </div>
@@ -538,7 +538,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmPermanentDeleteBtn">
+                    <button type="button" class="btn btn-danger" wire:click="permanentDeleteProject" id="confirmPermanentDeleteBtn">
                         <i class="fas fa-trash-alt me-1"></i>Permanently Delete
                     </button>
                 </div>
@@ -546,112 +546,43 @@
         </div>
     </div>
 
-    <style>
-        .project-row:hover {
-            background-color: #f8f9fa;
-            transform: scale(1.01);
-        }
-        .project-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-        .table-responsive {
-            position: relative;
-            -webkit-overflow-scrolling: touch;
-        }
-        .table-responsive table thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        @media (max-width: 768px) {
-            .table-responsive {
-                max-height: calc(100vh - 220px) !important;
-            }
-            .card-body {
-                padding: 0.75rem;
-            }
-            .modal-dialog {
-                margin: 0.5rem;
-            }
-            .modal-xl {
-                max-width: 95vw;
-            }
-            .modal-body {
-                padding: 0.75rem !important;
-            }
-            .card-header {
-                padding: 0.5rem !important;
-            }
-            .card-header h6 {
-                font-size: 0.9rem;
-            }
-            .btn-sm {
-                font-size: 0.8rem;
-                padding: 0.4rem 0.75rem;
-            }
-        }
-    </style>
 
+    @script
     <script>
-        let projectIdToDelete = null;
-        let projectIdToPermanentDelete = null;
-
-        function confirmDelete(projectId) {
-            projectIdToDelete = projectId;
+        $wire.on('open-delete-modal', () => {
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             modal.show();
-        }
+        });
 
-        function confirmPermanentDelete(projectId) {
-            projectIdToPermanentDelete = projectId;
+        $wire.on('close-delete-modal', () => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+            if (modal) {
+                modal.hide();
+            }
+        });
+
+        $wire.on('open-permanent-delete-modal', () => {
             const modal = new bootstrap.Modal(document.getElementById('permanentDeleteModal'));
             modal.show();
-        }
+        });
 
-        function printProjectFlats(projectId, statusFilter = '') {
-            let printUrl = '{{ route("admin.print-templates.project-flats") }}?project_id=' + projectId;
-            
-            // Add status filter if provided
-            if (statusFilter) {
-                printUrl += '&status=' + statusFilter;
+        $wire.on('close-permanent-delete-modal', () => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('permanentDeleteModal'));
+            if (modal) {
+                modal.hide();
             }
-            
-            // Use globalPrint function if available, otherwise open in new window
+        });
+
+        $wire.on('print-project-flats', (event) => {
+            const printUrl = event.url;
             if (typeof globalPrint === 'function') {
                 globalPrint(printUrl, { method: 'iframe', autoPrint: true });
             } else {
-                // Fallback: open in new window
                 window.open(printUrl, '_blank');
             }
-        }
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            if (projectIdToDelete) {
-                @this.deleteProject(projectIdToDelete);
-                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-                modal.hide();
-                projectIdToDelete = null;
-            }
         });
-
-        document.getElementById('confirmPermanentDeleteBtn').addEventListener('click', function() {
-            if (projectIdToPermanentDelete) {
-                @this.permanentDeleteProject(projectIdToPermanentDelete);
-                const modal = bootstrap.Modal.getInstance(document.getElementById('permanentDeleteModal'));
-                modal.hide();
-                projectIdToPermanentDelete = null;
-            }
-        });
-
     </script>
+    @endscript
 
     <!-- Document Modal -->
     @if($show_document_modal)

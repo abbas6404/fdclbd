@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             ContractorSeeder::class,
             EmployeeSeeder::class,
+            ApprovalLevelSeeder::class,
             RequisitionSeeder::class,
             ReportTestDataSeeder::class,
         ]);

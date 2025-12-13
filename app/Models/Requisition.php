@@ -20,12 +20,15 @@ class Requisition extends Model
         'project_id',
         'created_by',
         'updated_by',
+        'current_approval_level_id',
+        'current_approval_sequence',
     ];
 
     protected $casts = [
         'requisition_date' => 'date',
         'required_date' => 'date',
         'total_amount' => 'integer',
+        'current_approval_sequence' => 'integer',
     ];
 
     // Relationships
@@ -52,6 +55,16 @@ class Requisition extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function currentApprovalLevel()
+    {
+        return $this->belongsTo(ApprovalLevel::class, 'current_approval_level_id');
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(RequisitionApproval::class);
     }
 
     /**

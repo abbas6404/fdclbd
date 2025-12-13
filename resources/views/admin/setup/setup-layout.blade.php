@@ -57,6 +57,13 @@
                                 <i class="fas fa-cog me-2"></i>System Settings
                         </a>
                         @endcan
+                        
+                        @can('setup.approval-levels')
+                        <a href="{{ route('admin.setup.approval-levels.index') }}" 
+                            class="list-group-item list-group-item-action {{ request()->routeIs('admin.setup.approval-levels.*') ? 'active' : '' }}">
+                                <i class="fas fa-layer-group me-2"></i>Approval Levels
+                        </a>
+                        @endcan
                       
                     </div>
                 </div>

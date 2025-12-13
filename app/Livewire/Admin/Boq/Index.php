@@ -378,6 +378,20 @@ class Index extends Component
         $this->selected_record_name = '';
     }
 
+    public function printBoq()
+    {
+        if (!$this->selected_project_id) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Please select a project first.'
+            ]);
+            return;
+        }
+
+        $printUrl = route('admin.print-templates.boq', ['project_id' => $this->selected_project_id]);
+        $this->dispatch('print-boq', url: $printUrl);
+    }
+
     public function saveBoqRecords()
     {
         if (!$this->selected_project_id) {

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SystemSetting;
 use App\Models\TreasuryAccount;
+use App\Models\Project;
 
 class AdminController extends Controller
 {
@@ -234,7 +235,20 @@ class AdminController extends Controller
      */
     public function showProfile()
     {
-        return view('admin.profile.index');
+        $user = Auth::user();
+        
+        // Load projects created by the user
+        $createdProjects = Project::where('created_by', $user->id)
+            ->withCount('flats')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        // Get project statistics
+        $totalProjectsCreated = Project::where('created_by', $user->id)->count();
+        $totalProjectsUpdated = Project::where('updated_by', $user->id)->count();
+        
+        return view('admin.profile.index', compact('createdProjects', 'totalProjectsCreated', 'totalProjectsUpdated'));
     }
 
     /**

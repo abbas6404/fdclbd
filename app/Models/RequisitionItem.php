@@ -19,6 +19,8 @@ class RequisitionItem extends Model
         'unit',
         'qty',
         'confirmation_status',
+        'current_approval_level_id',
+        'current_approval_sequence',
         'created_by',
         'updated_by',
         'change_history',
@@ -26,6 +28,7 @@ class RequisitionItem extends Model
 
     protected $casts = [
         'qty' => 'integer',
+        'current_approval_sequence' => 'integer',
         'change_history' => 'array',
     ];
 
@@ -48,6 +51,16 @@ class RequisitionItem extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function currentApprovalLevel()
+    {
+        return $this->belongsTo(ApprovalLevel::class, 'current_approval_level_id');
+    }
+
+    public function itemApprovals()
+    {
+        return $this->hasMany(RequisitionItemApproval::class);
     }
 
     /**

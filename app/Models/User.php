@@ -127,4 +127,50 @@ class User extends Authenticatable
     {
         $this->update(['last_login_at' => now()]);
     }
+
+    // Approval Level Relationships
+    public function approvalLevels()
+    {
+        return $this->belongsToMany(ApprovalLevel::class, 'user_approval_levels')
+            ->withPivot('is_active')
+            ->withTimestamps()
+            ->wherePivot('is_active', true);
+    }
+
+    public function userApprovalLevels()
+    {
+        return $this->hasMany(UserApprovalLevel::class);
+    }
+
+    /**
+     * Get user's current active approval level
+     */
+    public function getCurrentApprovalLevel()
+    {
+        return $this->approvalLevels()->first();
+    }
+
+    /**
+     * Check if user has approval level
+     */
+    public function hasApprovalLevel($levelId)
+    {
+        return $this->approvalLevels()->where('approval_levels.id', $levelId)->exists();
+    }
+
+    /**
+     * Get projects created by this user
+     */
+    public function createdProjects()
+    {
+        return $this->hasMany(Project::class, 'created_by');
+    }
+
+    /**
+     * Get projects updated by this user
+     */
+    public function updatedProjects()
+    {
+        return $this->hasMany(Project::class, 'updated_by');
+    }
 }

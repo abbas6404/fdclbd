@@ -302,6 +302,9 @@ class Index extends Component
             // Generate requisition number
             $requisitionNumber = Requisition::generateRequisitionNumber();
 
+            // Get first approval level
+            $firstApprovalLevel = \App\Models\ApprovalLevel::getFirstLevel();
+
             // Create requisition
             $requisition = Requisition::create([
                 'requisition_number' => $requisitionNumber,
@@ -314,9 +317,11 @@ class Index extends Component
                 'project_id' => $this->selected_project_id ?: null,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
+                'current_approval_level_id' => $firstApprovalLevel ? $firstApprovalLevel->id : null,
+                'current_approval_sequence' => $firstApprovalLevel ? $firstApprovalLevel->sequence : null,
             ]);
 
-            // Create requisition items
+            // Create requisition items with initial approval level
             foreach ($this->items as $item) {
                 RequisitionItem::create([
                     'requisition_id' => $requisition->id,
@@ -324,6 +329,8 @@ class Index extends Component
                     'description' => $item['description'] ?? '',
                     'unit' => $item['unit'] ?? 'pcs',
                     'qty' => (int) $item['qty'],
+                    'current_approval_level_id' => $firstApprovalLevel ? $firstApprovalLevel->id : null,
+                    'current_approval_sequence' => $firstApprovalLevel ? $firstApprovalLevel->sequence : null,
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id(),
                 ]);

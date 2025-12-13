@@ -18,6 +18,8 @@ return new class extends Migration
             $table->date('required_date')->nullable(); // Required/Expected delivery date
             $table->unsignedBigInteger('total_amount')->default(0);
             $table->enum('status', ['pending', 'approved', 'rejected', 'completed'])->default('pending');
+            $table->unsignedBigInteger('current_approval_level_id')->nullable();
+            $table->integer('current_approval_sequence')->nullable();
             $table->text('remark')->nullable();
             
             $table->timestamps();

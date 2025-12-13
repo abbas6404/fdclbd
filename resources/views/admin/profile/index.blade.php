@@ -3,418 +3,285 @@
 @section('title', 'My Profile')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="profile-header mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="h2 mb-1 text-white fw-bold">My Profile</h1>
-                <p class="text-white-50 mb-0">View your account information and settings</p>
-            </div>
-            <div class="col-md-4 text-end">
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-light btn-sm">
-                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
-                </a>
-            </div>
+<div class="container-fluid px-3 px-md-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 fw-bold">My Profile</h1>
+            <p class="text-muted mb-0">Manage your account information and settings</p>
         </div>
+        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+        </a>
     </div>
 
+    <!-- Alert Messages -->
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
     @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <div class="row">
-        <!-- Profile Information -->
+    <div class="row g-4">
+        <!-- Left Column - Profile Info & Edit Form -->
         <div class="col-lg-8">
-            <!-- Personal Information Card -->
-            <div class="profile-card mb-4">
-                <div class="card-header-section">
-                    <div class="d-flex align-items-center">
-                        <div class="header-icon">
-                            <i class="fas fa-user"></i>
+            <!-- Profile Header Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="position-relative">
+                                @if(Auth::user()->profile_photo_path)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                         alt="Profile" 
+                                         class="rounded-circle" 
+                                         style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #e9ecef;">
+                                @else
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white" 
+                                         style="width: 120px; height: 120px; font-size: 3rem; border: 4px solid #e9ecef;">
+                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-white" 
+                                      style="width: 20px; height: 20px;"></span>
+                            </div>
                         </div>
-                        <div>
-                            <h5 class="mb-0 fw-bold">Personal Information</h5>
-                            <small class="text-muted">Your basic account details</small>
+                        <div class="col">
+                            <h4 class="mb-1 fw-bold">{{ Auth::user()->name }}</h4>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-envelope me-2"></i>{{ Auth::user()->email }}
+                            </p>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach(Auth::user()->roles as $role)
+                                    <span class="badge bg-primary">{{ $role->name }}</span>
+                                @endforeach
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                <i class="fas fa-edit me-2"></i>Edit Profile
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="card-body-section">
-                    <div class="row">
-                        <!-- Profile Photo -->
-                        <div class="col-md-3 text-center mb-4">
-                            <div class="profile-photo-wrapper">
-                                @if(Auth::user()->profile_photo_path)
-                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
-                                         alt="Profile Photo" 
-                                         class="profile-photo">
-                                @else
-                                    <div class="profile-photo-placeholder">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                @endif
-                                <div class="profile-status">
-                                    <span class="status-dot active"></span>
-                                    <small>Active</small>
-                                </div>
+            </div>
+
+            <!-- Personal Information Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-user me-2 text-primary"></i>Personal Information
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">Full Name</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->name ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">Email Address</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">Phone Number</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->phone ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">User Code</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->code ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-12">
+                            <label class="text-muted small mb-1">Address</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->address ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted small mb-1">City</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->city ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted small mb-1">State</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->state ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted small mb-1">ZIP Code</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->zip ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">Country</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->country ?? 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">Member Since</label>
+                            <p class="mb-0 fw-semibold">{{ Auth::user()->created_at->format('M d, Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Projects Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-building me-2 text-primary"></i>Related Projects
+                    </h5>
+                    <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Statistics -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h3 class="mb-0 text-primary">{{ $totalProjectsCreated ?? 0 }}</h3>
+                                <small class="text-muted">Projects Created</small>
                             </div>
                         </div>
-
-                        <!-- Personal Details -->
-                        <div class="col-md-9">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-user-circle text-primary me-2"></i>
-                                            Full Name
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->name ?? 'Not provided' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-envelope text-success me-2"></i>
-                                            Email Address
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->email }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-phone text-info me-2"></i>
-                                            Phone Number
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->phone ?? 'Not provided' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-map-marker-alt text-warning me-2"></i>
-                                            Address
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->address ?? 'Not provided' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-city text-secondary me-2"></i>
-                                            City
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->city ?? 'Not provided' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-map text-danger me-2"></i>
-                                            State
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->state ?? 'Not provided' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-mail-bulk text-primary me-2"></i>
-                                            ZIP Code
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->zip ?? 'Not provided' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-globe text-success me-2"></i>
-                                            Country
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->country ?? 'Not provided' }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="fas fa-calendar-alt text-info me-2"></i>
-                                            Member Since
-                                        </div>
-                                        <div class="info-value">
-                                            {{ Auth::user()->created_at->format('M d, Y') }}
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h3 class="mb-0 text-success">{{ $totalProjectsUpdated ?? 0 }}</h3>
+                                <small class="text-muted">Projects Updated</small>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Projects List -->
+                    @if(isset($createdProjects) && $createdProjects->count() > 0)
+                        <div class="list-group list-group-flush">
+                            @foreach($createdProjects as $project)
+                                <div class="list-group-item border-0 px-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-2">
+                                                <a href="{{ route('admin.projects.show', $project->id) }}" class="text-decoration-none">
+                                                    {{ $project->project_name }}
+                                                </a>
+                                            </h6>
+                                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                                <span class="badge bg-{{ $project->status === 'ongoing' ? 'primary' : ($project->status === 'completed' ? 'success' : 'secondary') }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $project->status)) }}
+                                                </span>
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-home me-1"></i>{{ $project->flats_count }} Flats
+                                                </span>
+                                            </div>
+                                            @if($project->address)
+                                                <small class="text-muted">
+                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ Str::limit($project->address, 50) }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                        <small class="text-muted">{{ $project->created_at->format('M d, Y') }}</small>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-5">
+                            <i class="fas fa-building text-muted mb-3" style="font-size: 3rem;"></i>
+                            <p class="text-muted mb-3">No projects found</p>
+                            <a href="{{ route('admin.projects.create') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i> Create Project
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Sidebar -->
+        <div class="col-lg-4">
+            <!-- Account Summary Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>Account Summary
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3 pb-3 border-bottom">
+                        <label class="text-muted small mb-1">Roles</label>
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach(Auth::user()->roles as $role)
+                                <span class="badge bg-primary">{{ $role->name }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="mb-3 pb-3 border-bottom">
+                        <label class="text-muted small mb-1">Permissions</label>
+                        <p class="mb-0 fw-semibold">{{ Auth::user()->getAllPermissions()->count() }} permissions assigned</p>
+                    </div>
+                    <div class="mb-3 pb-3 border-bottom">
+                        <label class="text-muted small mb-1">Last Login</label>
+                        <p class="mb-0 fw-semibold">{{ Auth::user()->updated_at->format('M d, Y H:i') }}</p>
+                    </div>
+                    <div>
+                        <label class="text-muted small mb-1">Member Since</label>
+                        <p class="mb-0 fw-semibold">{{ Auth::user()->created_at->format('M d, Y') }}</p>
                     </div>
                 </div>
             </div>
 
             <!-- Account Security Card -->
-            <div class="profile-card mb-4">
-                <div class="card-header-section">
-                    <div class="d-flex align-items-center">
-                        <div class="header-icon security">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-shield-alt me-2 text-primary"></i>Account Security
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                         <div>
-                            <h5 class="mb-0 fw-bold">Account Security</h5>
-                            <small class="text-muted">Manage your account security settings</small>
+                            <h6 class="mb-1">Password</h6>
+                            <small class="text-muted">Last changed: {{ Auth::user()->updated_at->diffForHumans() }}</small>
                         </div>
+                        <a href="{{ route('admin.profile.password') }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit me-1"></i>Change
+                        </a>
                     </div>
-                </div>
-                <div class="card-body-section">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="security-item">
-                                <div class="security-icon">
-                                    <i class="fas fa-key"></i>
-                                </div>
-                                <div class="security-content">
-                                    <h6 class="mb-1">Password</h6>
-                                    <small class="text-muted">Last changed: {{ Auth::user()->updated_at->diffForHumans() }}</small>
-                                </div>
-                                <div class="security-action">
-                                    <a href="{{ route('admin.profile.password') }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-edit me-1"></i> Change
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <div class="security-item">
-                                <div class="security-icon disabled">
-                                    <i class="fas fa-mobile-alt"></i>
-                                </div>
-                                <div class="security-content">
-                                    <h6 class="mb-1">Two-Factor Authentication</h6>
-                                    <small class="text-muted">Add an extra layer of security</small>
-                                </div>
-                                <div class="security-action">
-                                    <button class="btn btn-secondary btn-sm" disabled>
-                                        <i class="fas fa-plus me-1"></i> Setup
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <div class="security-item">
-                                <div class="security-icon">
-                                    <i class="fas fa-desktop"></i>
-                                </div>
-                                <div class="security-content">
-                                    <h6 class="mb-1">Login Sessions</h6>
-                                    <small class="text-muted">Manage active sessions</small>
-                                </div>
-                                <div class="security-action">
-                                    <button class="btn btn-info btn-sm">
-                                        <i class="fas fa-eye me-1"></i> View
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <div class="security-item">
-                                <div class="security-icon">
-                                    <i class="fas fa-life-ring"></i>
-                                </div>
-                                <div class="security-content">
-                                    <h6 class="mb-1">Account Recovery</h6>
-                                    <small class="text-muted">Set up recovery options</small>
-                                </div>
-                                <div class="security-action">
-                                    <button class="btn btn-warning btn-sm">
-                                        <i class="fas fa-cog me-1"></i> Setup
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Account Summary Card -->
-            <div class="profile-card mb-4">
-                <div class="card-header-section">
-                    <div class="d-flex align-items-center">
-                        <div class="header-icon summary">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 class="mb-0 fw-bold">Account Summary</h5>
-                            <small class="text-muted">Your account overview</small>
+                            <h6 class="mb-1">Two-Factor Auth</h6>
+                            <small class="text-muted">Not enabled</small>
                         </div>
-                    </div>
-                </div>
-                <div class="card-body-section">
-                    <div class="summary-item">
-                        <div class="summary-icon">
-                            <i class="fas fa-user-tag"></i>
-                        </div>
-                        <div class="summary-content">
-                            <h6 class="mb-1">Roles</h6>
-                            <div class="role-badges">
-                                @foreach(Auth::user()->roles as $role)
-                                    <span class="role-badge">{{ $role->name }}</span>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="summary-item">
-                        <div class="summary-icon">
-                            <i class="fas fa-key"></i>
-                        </div>
-                        <div class="summary-content">
-                            <h6 class="mb-1">Permissions</h6>
-                            <small class="text-muted">{{ Auth::user()->getAllPermissions()->count() }} permissions assigned</small>
-                        </div>
-                    </div>
-
-                    <div class="summary-item">
-                        <div class="summary-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="summary-content">
-                            <h6 class="mb-1">Last Login</h6>
-                            <small class="text-muted">{{ Auth::user()->updated_at->format('M d, Y H:i') }}</small>
-                        </div>
-                    </div>
-
-                    <div class="summary-item">
-                        <div class="summary-icon">
-                            <i class="fas fa-calendar"></i>
-                        </div>
-                        <div class="summary-content">
-                            <h6 class="mb-1">Member Since</h6>
-                            <small class="text-muted">{{ Auth::user()->created_at->format('M d, Y') }}</small>
-                        </div>
+                        <button class="btn btn-sm btn-secondary" disabled>
+                            <i class="fas fa-plus me-1"></i>Setup
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Quick Actions Card -->
-            <div class="profile-card mb-4">
-                <div class="card-header-section">
-                    <div class="d-flex align-items-center">
-                        <div class="header-icon actions">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-0 fw-bold">Quick Actions</h5>
-                            <small class="text-muted">Navigate to important sections</small>
-                        </div>
-                    </div>
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-bolt me-2 text-primary"></i>Quick Actions
+                    </h5>
                 </div>
-                <div class="card-body-section">
-                    <div class="action-grid">
-                        <a href="{{ route('admin.dashboard') }}" class="action-item">
-                            <div class="action-icon">
-                                <i class="fas fa-tachometer-alt"></i>
-                            </div>
-                            <span>Dashboard</span>
+                <div class="card-body p-4">
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                         </a>
-                        <a href="{{ route('admin.users.index') }}" class="action-item">
-                            <div class="action-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <span>Users</span>
+                        <a href="{{ route('admin.projects.index') }}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="fas fa-building me-2"></i>Projects
                         </a>
-                        <a href="{{ route('admin.setup.role.index') }}" class="action-item">
-                            <div class="action-icon">
-                                <i class="fas fa-user-tag"></i>
-                            </div>
-                            <span>Role Setup</span>
+                        <a href="{{ route('admin.admin-users.index') }}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="fas fa-users me-2"></i>Users
                         </a>
-                        <a href="{{ route('admin.reports') }}" class="action-item">
-                            <div class="action-icon">
-                                <i class="fas fa-chart-bar"></i>
-                            </div>
-                            <span>Reports</span>
+                        <a href="{{ route('admin.reports.index') }}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="fas fa-chart-bar me-2"></i>Reports
                         </a>
-                        <a href="{{ route('admin.profile.password') }}" class="action-item">
-                            <div class="action-icon">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <span>Password</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- System Information Card -->
-            <div class="profile-card mb-4">
-                <div class="card-header-section">
-                    <div class="d-flex align-items-center">
-                        <div class="header-icon system">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-0 fw-bold">System Info</h5>
-                            <small class="text-muted">Technical information</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body-section">
-                    <div class="system-item">
-                        <div class="system-label">PHP Version</div>
-                        <div class="system-value">{{ phpversion() }}</div>
-                    </div>
-                    <div class="system-item">
-                        <div class="system-label">Laravel Version</div>
-                        <div class="system-value">{{ app()->version() }}</div>
-                    </div>
-                    <div class="system-item">
-                        <div class="system-label">Database</div>
-                        <div class="system-value">{{ config('database.default') }}</div>
-                    </div>
-                    <div class="system-item">
-                        <div class="system-label">Environment</div>
-                        <div class="system-value">{{ config('app.env') }}</div>
                     </div>
                 </div>
             </div>
@@ -422,5 +289,103 @@
     </div>
 </div>
 
-<!-- Styles moved to admin-layout.css -->
-@endsection 
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                   name="name" value="{{ old('name', Auth::user()->name) }}" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                   name="email" value="{{ old('email', Auth::user()->email) }}" required>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-control @error('phone') is-invalid @enderror" 
+                                   name="phone" value="{{ old('phone', Auth::user()->phone) }}">
+                            @error('phone')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Profile Photo</label>
+                            <input type="file" class="form-control @error('profile_photo') is-invalid @enderror" 
+                                   name="profile_photo" accept="image/*">
+                            @error('profile_photo')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Max size: 2MB (JPEG, PNG, JPG, GIF)</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-control @error('address') is-invalid @enderror" 
+                                   name="address" value="{{ old('address', Auth::user()->address) }}">
+                            @error('address')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control @error('city') is-invalid @enderror" 
+                                   name="city" value="{{ old('city', Auth::user()->city) }}">
+                            @error('city')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-control @error('state') is-invalid @enderror" 
+                                   name="state" value="{{ old('state', Auth::user()->state) }}">
+                            @error('state')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control @error('zip') is-invalid @enderror" 
+                                   name="zip" value="{{ old('zip', Auth::user()->zip) }}">
+                            @error('zip')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Country</label>
+                            <input type="text" class="form-control @error('country') is-invalid @enderror" 
+                                   name="country" value="{{ old('country', Auth::user()->country) }}">
+                            @error('country')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
